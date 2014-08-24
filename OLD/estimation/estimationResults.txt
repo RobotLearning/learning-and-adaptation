@@ -1,0 +1,538 @@
+Results for zero mean 1D
+Covariance parameters maximizing the log likelihood:
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.138253, sf = 0.400061, sn = 0.100030 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.105065, sf = 0.198473, sn = 0.092682 
+True values: ell = 0.150000, sf = 0.500000, sn = 0.100000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.304767, sf = 0.858162, sn = 0.201235 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.304780, sf = 0.856433, sn = 0.201181 
+True values: ell = 0.250000, sf = 0.800000, sn = 0.200000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.107990, sf = 1.199451, sn = 0.296159 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.109223, sf = 1.257364, sn = 0.296226 
+True values: ell = 0.100000, sf = 1.000000, sn = 0.300000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.438413, sf = 0.400061, sn = 0.100030 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.335673, sf = 0.188820, sn = 0.092188 
+True values: ell = 0.300000, sf = 0.500000, sn = 0.100000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.135791, sf = 0.745862, sn = 0.178372 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.135355, sf = 0.739435, sn = 0.178378 
+True values: ell = 0.150000, sf = 1.200000, sn = 0.200000 
+
+Results for 1D linear mean MLE:
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.138397, sf = 0.400061, sn = 0.100030 
+mean slope = 0.999909, intercept = 0.433455 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.105280, sf = 0.198016, sn = 0.092627 
+mean slope = 0.414783, intercept = 1.027847 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 4 iterations. 
+ell = 0.895614, sf = 1.101416, sn = 0.175052 
+mean slope = 0.899205, intercept = 1.401514 
+True values: ell = 0.150000, sf = 0.500000, sn = 0.100000 
+mean slope = 0.500000, intercept = 1.000000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.236134, sf = 0.563329, sn = 0.200137 
+mean slope = 0.007682, intercept = 1.499634 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.216469, sf = 0.520327, sn = 0.199604 
+mean slope = 1.827645, intercept = -0.150021 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 5 iterations. 
+ell = 0.308984, sf = 0.981860, sn = 0.202874 
+mean slope = 1.225961, intercept = 0.123391 
+True values: ell = 0.250000, sf = 0.800000, sn = 0.200000 
+mean slope = 0.200000, intercept = 0.400000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.106687, sf = 1.198354, sn = 0.295062 
+mean slope = 0.439506, intercept = 0.792181 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.106692, sf = 1.221336, sn = 0.295354 
+mean slope = 0.720620, intercept = 0.473785 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 5 iterations. 
+ell = 0.111896, sf = 1.375949, sn = 0.297605 
+mean slope = 0.620342, intercept = 0.510278 
+True values: ell = 0.100000, sf = 1.000000, sn = 0.300000 
+mean slope = 0.100000, intercept = 0.600000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.439716, sf = 0.400061, sn = 0.100030 
+mean slope = 0.818656, intercept = 1.026048 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.164706, sf = 0.068621, sn = 0.093704 
+mean slope = 0.537315, intercept = 1.111078 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 4 iterations. 
+ell = 0.579034, sf = 0.817620, sn = 0.093716 
+mean slope = 1.461668, intercept = 0.564679 
+True values: ell = 0.300000, sf = 0.500000, sn = 0.100000 
+mean slope = 1.000000, intercept = 0.800000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.128406, sf = 0.666850, sn = 0.177641 
+mean slope = -0.199726, intercept = 1.439643 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.113219, sf = 0.517123, sn = 0.176096 
+mean slope = 2.050731, intercept = -0.647697 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 4 iterations. 
+ell = 0.130622, sf = 0.722367, sn = 0.177846 
+mean slope = 2.109795, intercept = -0.687738 
+True values: ell = 0.150000, sf = 1.200000, sn = 0.200000 
+mean slope = 1.500000, intercept = 0.200000 
+
+Results for zero mean 2D
+Covariance parameters maximizing the log likelihood:
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.173148, ell2 = 0.794753, sf = 0.681481, sn = 0.102469 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.147529, ell2 = 0.621114, sf = 0.539554, sn = 0.096381 
+True values: ell1 = 0.150000, ell2 = 0.500000, sf = 0.500000, sn = 0.100000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.277401, ell2 = 0.307373, sf = 0.402743, sn = 0.180384 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.276928, ell2 = 0.307414, sf = 0.402037, sn = 0.180244 
+True values: ell1 = 0.250000, ell2 = 0.350000, sf = 0.400000, sn = 0.200000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.067593, ell2 = 0.841667, sf = 0.859259, sn = 0.285185 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.007577, ell2 = 0.757384, sf = 0.779213, sn = 0.289089 
+True values: ell1 = 0.100000, ell2 = 0.800000, sf = 1.000000, sn = 0.300000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.313889, ell2 = 0.161420, sf = 0.582716, sn = 0.102469 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.297783, ell2 = 0.157240, sf = 0.536357, sn = 0.100702 
+True values: ell1 = 0.300000, ell2 = 0.150000, sf = 0.500000, sn = 0.100000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.153601, ell2 = 0.196605, sf = 1.109465, sn = 0.100823 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.158753, ell2 = 0.203085, sf = 1.263923, sn = 0.096094 
+True values: ell1 = 0.150000, ell2 = 0.200000, sf = 1.200000, sn = 0.100000 
+
+Results for linear mean 2D MLE
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.173148, ell2 = 0.050000, sf = 0.414815, sn = 0.122222 
+mean slope1 = 1.233333, slope2 = -1.000000, intercept = 0.666667 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.136948, ell2 = 0.591196, sf = 0.449718, sn = 0.096313 
+mean slope1 = 1.460763, slope2 = -1.190490, intercept = 0.629445 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.172790, ell2 = 0.730702, sf = 0.658403, sn = 0.100910 
+mean slope1 = 1.617880, slope2 = -1.153163, intercept = 0.469492 
+True values: ell1 = 0.150000, ell2 = 0.500000, sf = 0.500000, sn = 0.100000 
+mean slope1 = 0.500000, slope2 = -1.000000, intercept = 1.000000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.278704, ell2 = 0.050000, sf = 0.503704, sn = 0.166667 
+mean slope1 = 0.996296, slope2 = -1.000000, intercept = 0.977778 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.263415, ell2 = 0.265768, sf = 0.318257, sn = 0.178015 
+mean slope1 = 0.099170, slope2 = 0.005249, intercept = 1.004556 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 3 iterations. 
+ell1 = 0.333093, ell2 = 0.338161, sf = 0.549859, sn = 0.180148 
+mean slope1 = -0.141126, slope2 = 0.015599, intercept = 1.154043 
+True values: ell1 = 0.250000, ell2 = 0.350000, sf = 0.400000, sn = 0.200000 
+mean slope1 = 0.800000, slope2 = 0.200000, intercept = 0.400000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.102778, ell2 = 0.050000, sf = 0.770370, sn = 0.448148 
+mean slope1 = 0.166667, slope2 = -1.000000, intercept = 0.977778 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.044467, ell2 = 0.562695, sf = 0.578043, sn = 0.281934 
+mean slope1 = -0.927712, slope2 = -0.027973, intercept = 1.360702 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.064807, ell2 = 0.645882, sf = 0.695580, sn = 0.283165 
+mean slope1 = -0.749265, slope2 = -0.073659, intercept = 1.348010 
+True values: ell1 = 0.100000, ell2 = 0.800000, sf = 1.000000, sn = 0.300000 
+mean slope1 = -0.100000, slope2 = 0.600000, intercept = 1.000000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.384259, ell2 = 0.050000, sf = 0.770370, sn = 0.107407 
+mean slope1 = 1.233333, slope2 = -1.000000, intercept = 0.488889 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.274318, ell2 = 0.146989, sf = 0.459329, sn = 0.099051 
+mean slope1 = 1.461867, slope2 = 1.304252, intercept = -0.816243 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.301972, ell2 = 0.158473, sf = 0.556433, sn = 0.101957 
+mean slope1 = 1.433739, slope2 = 1.205505, intercept = -0.741426 
+True values: ell1 = 0.300000, ell2 = 0.150000, sf = 0.500000, sn = 0.100000 
+mean slope1 = 1.000000, slope2 = 0.800000, intercept = -0.500000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.173148, ell2 = 0.050000, sf = 1.185185, sn = 0.240741 
+mean slope1 = 1.292593, slope2 = -1.000000, intercept = 0.977778 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.157163, ell2 = 0.200518, sf = 1.211677, sn = 0.096195 
+mean slope1 = 0.762985, slope2 = 1.981844, intercept = -0.418633 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.159635, ell2 = 0.204682, sf = 1.290312, sn = 0.097569 
+mean slope1 = 0.777046, slope2 = 1.952173, intercept = -0.431151 
+True values: ell1 = 0.150000, ell2 = 0.200000, sf = 1.200000, sn = 0.100000 
+mean slope1 = 1.500000, slope2 = 1.300000, intercept = -0.200000 
+Results for zero mean 1D
+Covariance parameters maximizing the log likelihood:
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.138253, sf = 0.400061, sn = 0.100030 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.105065, sf = 0.198473, sn = 0.092682 
+True values: ell = 0.150000, sf = 0.500000, sn = 0.100000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.304767, sf = 0.858162, sn = 0.201235 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.304780, sf = 0.856433, sn = 0.201181 
+True values: ell = 0.250000, sf = 0.800000, sn = 0.200000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.107990, sf = 1.199451, sn = 0.296159 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.109223, sf = 1.257364, sn = 0.296226 
+True values: ell = 0.100000, sf = 1.000000, sn = 0.300000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.438413, sf = 0.400061, sn = 0.100030 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.335673, sf = 0.188820, sn = 0.092188 
+True values: ell = 0.300000, sf = 0.500000, sn = 0.100000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.135791, sf = 0.745862, sn = 0.178372 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.135355, sf = 0.739435, sn = 0.178378 
+True values: ell = 0.150000, sf = 1.200000, sn = 0.200000 
+
+Results for 1D linear mean MLE:
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.138397, sf = 0.400061, sn = 0.100030 
+mean slope = 0.999909, intercept = 0.433455 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.105280, sf = 0.198016, sn = 0.092627 
+mean slope = 0.414783, intercept = 1.027847 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 4 iterations. 
+ell = 0.866061, sf = 1.074434, sn = 0.175461 
+mean slope = 0.906680, intercept = 1.362859 
+True values: ell = 0.150000, sf = 0.500000, sn = 0.100000 
+mean slope = 0.500000, intercept = 1.000000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.236134, sf = 0.563329, sn = 0.200137 
+mean slope = 0.007682, intercept = 1.499634 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.216469, sf = 0.520327, sn = 0.199604 
+mean slope = 1.827645, intercept = -0.150021 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 4 iterations. 
+ell = 0.319021, sf = 1.027445, sn = 0.202986 
+mean slope = 1.160649, intercept = 0.162770 
+True values: ell = 0.250000, sf = 0.800000, sn = 0.200000 
+mean slope = 0.200000, intercept = 0.400000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.106687, sf = 1.198354, sn = 0.295062 
+mean slope = 0.439506, intercept = 0.792181 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.106692, sf = 1.221336, sn = 0.295354 
+mean slope = 0.720620, intercept = 0.473785 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 4 iterations. 
+ell = 0.211047, sf = 2.310624, sn = 0.349434 
+mean slope = -1.249562, intercept = 0.976090 
+True values: ell = 0.100000, sf = 1.000000, sn = 0.300000 
+mean slope = 0.100000, intercept = 0.600000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.439716, sf = 0.400061, sn = 0.100030 
+mean slope = 0.818656, intercept = 1.026048 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.164706, sf = 0.068621, sn = 0.093704 
+mean slope = 0.537315, intercept = 1.111078 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 5 iterations. 
+ell = 0.554100, sf = 0.747355, sn = 0.093437 
+mean slope = 1.378502, intercept = 0.612280 
+True values: ell = 0.300000, sf = 0.500000, sn = 0.100000 
+mean slope = 1.000000, intercept = 0.800000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.128406, sf = 0.666850, sn = 0.177641 
+mean slope = -0.199726, intercept = 1.439643 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.113219, sf = 0.517123, sn = 0.176096 
+mean slope = 2.050731, intercept = -0.647697 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 3 iterations. 
+ell = 0.149690, sf = 0.937400, sn = 0.179445 
+mean slope = 2.163740, intercept = -0.724685 
+True values: ell = 0.150000, sf = 1.200000, sn = 0.200000 
+mean slope = 1.500000, intercept = 0.200000 
+
+Results for zero mean 2D
+Covariance parameters maximizing the log likelihood:
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.173148, ell2 = 0.794753, sf = 0.681481, sn = 0.102469 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.147529, ell2 = 0.621114, sf = 0.539554, sn = 0.096381 
+True values: ell1 = 0.150000, ell2 = 0.500000, sf = 0.500000, sn = 0.100000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.277401, ell2 = 0.307373, sf = 0.402743, sn = 0.180384 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.276928, ell2 = 0.307414, sf = 0.402037, sn = 0.180244 
+True values: ell1 = 0.250000, ell2 = 0.350000, sf = 0.400000, sn = 0.200000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.067593, ell2 = 0.841667, sf = 0.859259, sn = 0.285185 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.007577, ell2 = 0.757384, sf = 0.779213, sn = 0.289089 
+True values: ell1 = 0.100000, ell2 = 0.800000, sf = 1.000000, sn = 0.300000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.313889, ell2 = 0.161420, sf = 0.582716, sn = 0.102469 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.297783, ell2 = 0.157240, sf = 0.536357, sn = 0.100702 
+True values: ell1 = 0.300000, ell2 = 0.150000, sf = 0.500000, sn = 0.100000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.153601, ell2 = 0.196605, sf = 1.109465, sn = 0.100823 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.158753, ell2 = 0.203085, sf = 1.263923, sn = 0.096094 
+True values: ell1 = 0.150000, ell2 = 0.200000, sf = 1.200000, sn = 0.100000 
+
+Results for linear mean 2D MLE
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.173148, ell2 = 0.050000, sf = 0.414815, sn = 0.122222 
+mean slope1 = 1.233333, slope2 = -1.000000, intercept = 0.666667 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.136948, ell2 = 0.591196, sf = 0.449718, sn = 0.096313 
+mean slope1 = 1.460763, slope2 = -1.190490, intercept = 0.629445 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 3 iterations. 
+ell1 = 0.188924, ell2 = 0.807348, sf = 0.741680, sn = 0.104000 
+mean slope1 = 1.746079, slope2 = -1.148570, intercept = 0.377768 
+True values: ell1 = 0.150000, ell2 = 0.500000, sf = 0.500000, sn = 0.100000 
+mean slope1 = 0.500000, slope2 = -1.000000, intercept = 1.000000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.278704, ell2 = 0.050000, sf = 0.503704, sn = 0.166667 
+mean slope1 = 0.996296, slope2 = -1.000000, intercept = 0.977778 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.263415, ell2 = 0.265768, sf = 0.318257, sn = 0.178015 
+mean slope1 = 0.099170, slope2 = 0.005249, intercept = 1.004556 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 3 iterations. 
+ell1 = 0.349397, ell2 = 0.356040, sf = 0.593128, sn = 0.180595 
+mean slope1 = -0.195143, slope2 = 0.013705, intercept = 1.188750 
+True values: ell1 = 0.250000, ell2 = 0.350000, sf = 0.400000, sn = 0.200000 
+mean slope1 = 0.800000, slope2 = 0.200000, intercept = 0.400000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.102778, ell2 = 0.050000, sf = 0.770370, sn = 0.448148 
+mean slope1 = 0.166667, slope2 = -1.000000, intercept = 0.977778 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.044467, ell2 = 0.562695, sf = 0.578043, sn = 0.281934 
+mean slope1 = -0.927712, slope2 = -0.027973, intercept = 1.360702 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 3 iterations. 
+ell1 = 0.086497, ell2 = 1.809861, sf = 1.028224, sn = 0.317314 
+mean slope1 = -0.594483, slope2 = 0.153545, intercept = 1.200109 
+True values: ell1 = 0.100000, ell2 = 0.800000, sf = 1.000000, sn = 0.300000 
+mean slope1 = -0.100000, slope2 = 0.600000, intercept = 1.000000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.384259, ell2 = 0.050000, sf = 0.770370, sn = 0.107407 
+mean slope1 = 1.233333, slope2 = -1.000000, intercept = 0.488889 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.274318, ell2 = 0.146989, sf = 0.459329, sn = 0.099051 
+mean slope1 = 1.461867, slope2 = 1.304252, intercept = -0.816243 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.309836, ell2 = 0.166339, sf = 0.600490, sn = 0.103009 
+mean slope1 = 1.429446, slope2 = 1.147215, intercept = -0.704745 
+True values: ell1 = 0.300000, ell2 = 0.150000, sf = 0.500000, sn = 0.100000 
+mean slope1 = 1.000000, slope2 = 0.800000, intercept = -0.500000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.173148, ell2 = 0.050000, sf = 1.185185, sn = 0.240741 
+mean slope1 = 1.292593, slope2 = -1.000000, intercept = 0.977778 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.157163, ell2 = 0.200518, sf = 1.211677, sn = 0.096195 
+mean slope1 = 0.762985, slope2 = 1.981844, intercept = -0.418633 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.162039, ell2 = 0.207558, sf = 1.333448, sn = 0.098308 
+mean slope1 = 0.788890, slope2 = 1.932349, intercept = -0.442465 
+True values: ell1 = 0.150000, ell2 = 0.200000, sf = 1.200000, sn = 0.100000 
+mean slope1 = 1.500000, slope2 = 1.300000, intercept = -0.200000 

@@ -1,0 +1,382 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage{amsthm}
+\usepackage{graphicx}    %for figure environment.
+\usepackage{color}
+
+%SVG-Latex Stuff
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Path for your figures
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Set the paths where all figures are taken from:
+%SVG-Latex Stuff
+\newcommand{\executeiffilenewer}[3]{%
+ \ifnum\pdfstrcmp{\pdffilemoddate{#1}}%
+ {\pdffilemoddate{#2}}>0%
+ {\immediate\write18{#3}}\fi%
+}
+
+\newcommand{\includesvg}[1]{%
+\graphicspath{{media/}}%
+% \executeiffilenewer{#1.svg}{#1.pdf}%
+% {inkscape -z -D --file=#1.svg %
+% --export-pdf=#1.pdf --export-latex}%
+ \input{media/#1.pdf_tex}%
+\graphicspath{}%
+}
+
+\newcommand{\state}{\mathbf{x}} % used to denote the system states
+\newcommand{\traj}{\mathbf{s}} % used to denote the point on the trj
+\newcommand{\Traj}{\mathbf{\Sigma}}
+\newcommand{\sysInput}{\mathbf{u}} % used to denote the system inputs
+\newcommand{\context}{\mathbf{c}} % used to denote contexts
+\newcommand{\observations}{\mathbf{y}} % used for the observed output
+\newcommand{\aatop}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}
+\renewcommand{\theequation}{\arabic{equation}}
+
+\newtheorem{prop}{Proposition}[section]
+\newtheorem{defn}{Definition}
+
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\author{Okan}
+\title{Point Tracking}
+\begin{document}
+
+\section{Point Tracking}
+
+We investigate here the convergence of the CGP-UCB algorithm in the case of discrete-time point tracking. The discrete-time dynamics of the system is given as follows:
+
+\begin{align}
+\state_{t+1} &= \mathbf{f}(\state_t,\sysInput_t), \quad  t = 0,1,\ldots,T, \label{system-dynamics}\\
+\state & \ \in \mathcal{X}_s, \quad \sysInput_t \ \in \mathcal{U}
+\end{align}
+
+where $\mathbf	{f}$ is Lipschitz-continuous in both arguments, $\state_t$ denotes the context, i.e. the state of the system at time $t$, $\traj$ is the point to be tracked and $\mathcal{X}_s$, $\mathcal{U}$ are the convex, compact sets of allowable states and control inputs, respectively. We assume that the system under the dynamics \eqref{system-dynamics} is controllable, i.e. $\forall \state_0 \in \mathcal{X}_s, \ \exists \tau < T$ and a policy $\gamma(t) = \sysInput_t \in \mathcal{U}, \ t = 0,1,\ldots,\tau \ $ such that $s = \state_{\tau+1} = \mathbf{f}(\state_{\tau},\sysInput_{\tau})$. \\
+
+
+For the semimetric space $(\mathcal{X}_s, d)$, define the cost function $C : \mathcal{X}_s \times \traj \to \mathbb{R}^{+}$ as $C(\state) = d(\state, \traj)$ and $C_t:=C(\state_t)=C(\mathbf{f}(\state_{t-1}, \sysInput_{t-1}))$ for $\state_t \in \mathcal{X}_s$ appropriately. 
+%$C_t$ under the dynamics \eqref{system-dynamics} is a function of $\state_{t-1}$ and $\sysInput_{t-1}$. 
+Denote the minimum of $C_t$ as $C_t^{*} = \min\limits_{\sysInput_{t-1} \in \mathcal{U}} C_{t}$. Using Theorem 3 in [Krause and Ong] we can bound the cumulative regret of CGP-UCB for cost functions $C(\state, \sysInput) \in \mathcal{H}_k(\mathcal{D})$~\footnote{We have here dropped the indices for $C_t(\state_{t-1}, \sysInput_{t-1})$ to show the dependence of the cost function on the \emph{drawn} dynamics and its independence of any particular time series $\state_t$ and $\sysInput_t$.}, the RKHS corresponding to the kernel $K(\mathbf{z},\mathbf{z}')$ for the combined context-action pair $\mathbf{z} = (\state, \sysInput) \in \mathcal{D}$, as:
+
+\begin{align}
+R_T = \sum_{t=1}^{T}r_t = \sum_{t = 1}^{T} (C_{t} - C_{t}^{*}) \leq \sqrt{\kappa T \beta_{T} \gamma_{T}} \label{cum-regret}
+\end{align}
+
+with high probability $p \geq 1 - \delta$. Here $\kappa = 8/\log(1 + \sigma^{-2})$ with $\sigma$ a uniform bound on the noise, $\beta_T = 2B + 300\gamma_{T}\log^{3}(T/\delta)$ depending on the free parameter $\delta$ is the value of the exploration-exploitation parameter at time stage $T$, $\|C(\state, \sysInput)\|_{K}^{2} \leq B$ and $\gamma_{T}$ is the information gain quantity for the particular cost function to be learned. \\
+
+We are first interested in catching up with the goal state $\traj$ in a finite amount of time $\tau < T$, where by catching-up time, we mean coming $\epsilon_s$ close to the goal state $\traj$ for arbitrarily small $\epsilon_s > 0$. This then requires us to look at the convergence of the sequence ${C_{t}}$. We can rewrite \eqref{cum-regret} as:
+
+\begin{align}
+\sum_{t = 1}^{T} C_{t} \leq \sum_{t = 1}^{T} C_{t}^{*} + \sqrt{\kappa T \beta_{T} \gamma_{T}} \label{cum-regret-2}
+\end{align}
+
+\begin{defn}
+We define the maximum decrease of the cost function as:
+\begin{align}
+\lambda(\state_t) = C_{t} - C_{t+1}^{*} = \max\limits_{\sysInput_t \in \mathcal{U}} \big( C_{t} - C_{t+1}(\state_t, \sysInput_t) \big) \label{defn-lambda}
+\end{align}
+\end{defn}
+
+using this definition we can rewrite \eqref{cum-regret-2}:
+
+\begin{align}
+\sum_{t = 1}^{T} C_{t} &\leq C_{0} + \sum_{t = 1}^{T-1} C_{t} + \sqrt{\kappa T \beta_{T} \gamma_{T}} - \sum_{t = 0}^{T-1} \lambda(\state_t) \\
+C_{T} &\leq  C_{0} + \sqrt{\kappa T \beta_{T} \gamma_{T}} - \sum_{t = 0}^{T-1} \lambda(\state_t) \quad \forall T \label{end-cost}
+\end{align}
+
+\begin{figure}
+	\centering
+	\def\svgwidth{0.5\columnwidth}
+	\includesvg{figure_pointTracking}
+	\caption{Sample path of $\state_t$ for $C_t = \|\state_{t} - \traj\|_2$}
+	\label{fig:drawing1}
+\end{figure}
+
+% figure needed
+Define $B^{*}(\traj)$ as a neighborhood of $\traj$ where $C^{*}_{t+1}(\state_t, \sysInput_t) = 0, \ \forall \state_t \in B^{*}(\traj)$, see Figure \ref{fig:drawing1}. Let $\epsilon_{s}^{*} = \max\limits_{\state \in \partial B^{*}(\traj)} C(\state)$. Note that so far we have not made any assumptions on the sign of $\lambda(\state)$.
+Let's call the following assumption as the \emph{optimistic advancement property} of the dynamics \eqref{system-dynamics}:
+
+\begin{align}
+\lambda&(\state) \geq \lambda_0 > 0, \quad \forall \state \in \mathcal{X}_s \setminus B^{*}(\traj), \quad t = 1, \ldots, T 
+\label{optim-advance} \\
+\lambda&_0 = \min\limits_{\state \in \mathcal{X}_s \setminus B^{*}(\traj)} \lambda(\state)
+\end{align}
+
+Note that $\epsilon_{s}^{*} \geq \lambda_0$~\footnote{The neighbourhood $B^{*}(\traj)$ is open. The complement set $\mathcal{X}_s \setminus B^{*}(\traj)$ is closed, and $\epsilon^{*}_{s} = \lambda(\state)$ for some $\state \in \partial B^{*}(\traj) \subset \mathcal{X}_s \setminus B^{*}(\traj)$, which is greater or equal to the minimum of $\lambda(\state)$ over this complement set.}. If we take $\lambda_1 = \min(\lambda_0, \epsilon_s)$~\footnote{Actually one can consider the case where we take $\lambda_0$ to reach $B^{*}(s)$ and afterwards take $\epsilon_s$ to reach $B(s, \epsilon_s)$.}, we can rewrite \eqref{end-cost} as a condition for being outside of any ball $B(\traj, \epsilon_s)$ with radius $\epsilon_{s}$:
+
+\begin{align}
+\epsilon_{s} < C_{t} \leq  C_{0} + \sqrt{\kappa t \beta_{t} \gamma_{t}} - t\lambda_1 \quad \forall t < \tau(\epsilon_s) \label{end-cost-2}
+\end{align}
+
+for a certain $\tau$ to be determined. If after $\tau(\epsilon_{s}) < T$ this condition is violated, it means the system is inside $B(\traj, \epsilon_s)$. Now, if we assume that the costs to be learned under the dynamics \eqref{system-dynamics} are drawn from a squared exponential kernel, then $\gamma_T = \mathcal{O}((\log T)^{d+1})$ where $d$ denotes the number of dimensions of the combined context-action space $\mathcal{D}$. Using this we can bound the cumulative regret and construct an upper bound for $\tau$. \\
+
+\begin{prop}
+$\forall \epsilon > 0 \ \exists \ \alpha(\epsilon, d) < \infty \ $ s.t. if $\omega_T = \mathcal{O}((\log T)^{d})$, then $\ \omega_{T} \leq \alpha T^{\epsilon}, \ T \geq 1$.  \label{gamma-bound} \\
+\end{prop}
+
+\begin{proof}
+$\ \exists \ a < \infty \ $ s.t. $\ \gamma_{T} \leq a (\log T)^{d}$. Take $\alpha = a \max T^{-\epsilon} (\log T)^{d}$. Taking the derivative of $g(T) = T^{-\epsilon} (\log T)^{d}$:
+
+\begin{align}
+\frac{d(\log T)^{d-1} - \epsilon(\log T)^{d}}{T^{1+\epsilon}} = 0
+\end{align}
+
+The function $g(T)$ is continuous for $T \geq 1$ with $g(1) = 0$ and as $T \to \infty, \ g(T) \to 0$. Hence the only optimum attained in $(1, \infty)$ at $T_{opt} = \exp(d/\epsilon)$ with $g(T_{opt}) = \big(\frac{d}{e\epsilon}\big)^{d}$ is a global maximum. Taking $\alpha(\epsilon,d) = a\big(\frac{d}{e\epsilon}\big)^{d}$ then we can see that 
+
+\begin{align}
+\omega_{T} \leq a (\log T)^{d} \leq \alpha T^{\epsilon}, \ T \geq 1. 
+\end{align}
+
+\end{proof}
+
+Since $\beta_T = 2B + 300\gamma_{T}\log^{3}(T/\delta)$ we can bound $R_T$ in \eqref{end-cost-2} as:
+
+\begin{align}
+R_T = \sqrt{\kappa T \beta_{T} \gamma_{T}} \leq \bar{\alpha}T^{1/2 + \epsilon} 
+\end{align}
+
+where $\omega_T = \kappa\beta_T\gamma_T = 2B\kappa\gamma_T + 300\kappa\gamma_T^2\log^{3}(T/\delta) = \mathcal{O}((\log T)^{2d+5})$ for the squared exponential kernel and $\bar{\alpha} = \alpha(\epsilon,(2d+5)/2)$ in Proposition \ref{gamma-bound}. Hence we can bound \eqref{end-cost-2} as:
+
+\begin{align}
+\epsilon_{s} &<  C_{0} + \bar{\alpha} t^{1/2 + \epsilon} - t\lambda_1 \quad \forall t < \tau(\epsilon_s) \label{end-cost-3}
+\end{align}
+
+for any $\epsilon_s > 0$. This means that CGP-UCB has a $1-\delta$ probability of having reached $B(\traj,\epsilon_s)$ at least once by time $\tau$ which satisfies the fractional polynomial inequality:
+
+\begin{align}
+\lambda_1 \tau - \bar{\alpha} \tau^{1/2 + \epsilon} - (C_{0}-\epsilon_s) \geq 0 \label{frac-poly-ineq}
+\end{align}
+
+Letting $\epsilon = 1/4$, we can solve the related quartic polynomial equation:
+
+\begin{align}
+\lambda_1 r^4 - \bar{\alpha} r^3 - (C_{0} - \epsilon_s) = 0 \label{poly-eq}
+\end{align}
+
+and take $\tau = \lceil r_0^4 \rceil$ where $r_0$ is the smallest positive root of \eqref{poly-eq}. Instead, for simplicity we take $\tau = \lceil p_0^4 \rceil$ where $p_0 = \frac{\bar{\alpha}}{\lambda_1} + \frac{(C_0 - \epsilon_s)\lambda_1^2}{\bar{\alpha}^3}$ and show that it satisfies \eqref{frac-poly-ineq}:
+
+\begin{align*}
+&\frac{\bar{\alpha}^{12} + 3\bar{\alpha}^8(C_0 - \epsilon_s)\lambda_1^3 + 3\bar{\alpha}^4(C_0 - \epsilon_s)^2\lambda_1^6 + (C_0 - \epsilon_s)^3\lambda_1^9}{\bar{\alpha}^{12}} > 1 \\
+&\frac{(C_0 - \epsilon_s)\lambda_1^2}{\bar{\alpha}^3}\Big(\frac{\bar{\alpha}^4 + (C_0 - \epsilon_s)\lambda_1^3}{\lambda_1 \bar{\alpha}^3}\Big)^3 > \frac{C_0 - \epsilon_s}{\lambda_1} \\
+& \Big(p_0 - \frac{\bar{\alpha}}{\lambda_1}\Big)p_0^{3} > \frac{C_0 - \epsilon_s}{\lambda_1} \\
+&\lambda_1 \tau - \bar{\alpha} \tau^{3/4} - (C_{0}-\epsilon_s) > 0
+\end{align*}
+
+We summarize the above results in another proposition. 
+
+\begin{prop}\label{point-tracking-conv}
+For any $\epsilon_s > 0$, the time $\tau$ it takes to reach $B(\traj,\epsilon_s)$ is upper bounded by:
+
+\begin{align}
+\tau \leq \lceil \big(\frac{\bar{\alpha}}{\lambda_1} + \frac{(C_0 - \epsilon_s)\lambda_1^2}{\bar{\alpha}^3}\big)^4 \rceil
+\label{catching-up-time}
+\end{align}
+
+with high probability $p \geq 1 - \delta$. 
+\end{prop}
+
+Depending on the constants $\alpha$ and $\lambda_1$, \eqref{catching-up-time} may be a very loose bound on the actual catching-up time. Convergence to the goal state $\traj$ will not be asymptotic because the sequence $r_t$ need not be monotonic. In case the system does get outside of $B(\traj, \epsilon_s)$ at time $T_{out} > \tau_i$, the previous analysis permits us to bound the re-catching-up time $\tau_{i+1}$ as well.
+
+\section{Trajectory Tracking}
+
+We can view trajectory tracking as a point-tracking problem where the point $\traj$ moves with a certain input sequence $v_{\Traj}(t)$ on $\Traj(t)$. We assume that $\Traj(t)$ is \emph{trackable}, i.e. $\forall \traj_t \in \Traj(t), \ t = 0, \ldots, N-1, \ \traj_{t+1} = \mathbf{f}(\traj_t,v_{\Traj}(t)), \ v_{\Traj}(t) \in \mathcal{U}$. \\
+
+Here the context is the combined state space of $\state_t$ and $\traj_t$, $(\state_t, \traj_t) \in \mathcal{X}$, where we drop the subscript $\traj$ used in the previous section. Notation-wise we add a further subscript to $\state$, $C$ and $r$, e.g. the state at time stage $i$ in episode $j$ is shown by $\state_{ij}$. \\
+
+We assume that we can start the system at $\traj_0 \in \Traj(t)$, i.e. $C_{0k} = 0 \quad \forall k$. Here we adapt the previous argument and assume a \emph{stopping time} $\tau(k)$ for every episode $k$ of trajectory tracking where the cost function exceeds at time $\tau$ a certain $\epsilon > 0$:
+
+\begin{align}
+C_{1k} &= r_{1k} \\
+C_{2k} &= r_{1k} + r_{2k} - \lambda(\state_{1k}) \\
+\vdots \\
+C_{\tau k} &= \sum_{i=1}^{\tau(k)} \big(r_{ik} - \lambda(\state_{(i-1)k})\big) \geq \epsilon \label{stopping-time}
+\end{align}
+
+\begin{figure}
+	\centering
+	\def\svgwidth{0.7\columnwidth}
+	\includesvg{figure2_pointTracking}
+	\caption{$\state_t$ pursuing $\traj$ running on $\Traj(t)$}
+	\label{fig:drawing2}
+\end{figure}
+
+where $\lambda$ is still defined as in \eqref{defn-lambda} and \eqref{optim-advance}, though geometrically it can not be shown as before since $C_t$ also depends on $\traj_t$, see Figure \ref{fig:drawing2}. We have the following result: \\
+
+\begin{prop} \label{trj-tracking-conv-1}
+Let $\traj_t \in \Traj(t), \ t = 1, \ldots, N$. Then the following holds with high probability: $\forall \epsilon > 0, \ \exists k \in \mathbb{N} \ s.t. \ \tau(k) \geq N$, where the stopping time $\tau$ is defined as in \eqref{stopping-time}.
+\end{prop}
+
+\begin{proof}
+Let $K$ be the total number of episodes. The total number of time stages is denoted by $T = \sum_{k=1}^{K} \tau(k)$. We can rewrite \eqref{stopping-time} for a fixed $k$ as:
+
+\begin{align}
+&\sum_{i=1}^{\tau(k)} r_{ik} \geq \epsilon + \underbrace{\sum_{i=0}^{\tau(k)-1} \lambda(\state_{ik})}_{=: \Lambda_k} \\
+&\underbrace{\sum_{k=1}^{K(T)}\sum_{i=1}^{\tau(k)} r_{ik}}_{R_{T}} \geq \epsilon K + \sum_{k=1}^{K(T)}\Lambda_k
+\end{align}
+
+Using \eqref{cum-regret}, the sublinearity of cumulative regret, and taking the limit:
+
+\begin{align}
+&\sum_{k=1}^{K(T)}\Lambda_k + \epsilon K \leq R_{T} \leq \sqrt{\kappa T \beta_{T} \gamma_{T}} \label{pre-limit-T} \\
+&\lim\limits_{T \to \infty} \frac{\sum_{k=1}^{K(T)}\Lambda_k + \epsilon K}{T} = 0 \label{limit-T}
+\end{align}
+
+holds with high probability $p \geq 1 - \delta$. Assume that as $T \to \infty$, $\tau(k)$ never exceeds $N$. Then $K \geq T/N$. Since $\Lambda_k \geq 0, \ \forall k = 1,\ldots,K$, we have:
+
+\begin{align}
+\frac{\sum_{k=1}^{K(T)}\Lambda_k + \epsilon K}{T} \geq \frac{\epsilon}{N}
+\end{align}
+
+which when taken the limit $T \to \infty$ contradicts \eqref{limit-T}. Hence if \eqref{cum-regret} holds there must be an episode $k$ where $\tau(k)$  exceeds $N$.
+
+\end{proof}
+
+This means that for every $\epsilon > 0$, if we try long enough, w.h.p. there will be an episode $k$ where the total cost-to-go drops below $\epsilon$:
+
+\begin{align}
+J_k = \sum_{t=1}^{N} C_{tk} \leq N(\epsilon/N) = \epsilon
+\end{align}
+
+Actually we can say something slightly better: we can put a bound on the total time stage $T$ when $\tau(k) \geq N$.
+
+\begin{prop} \label{trj-tracking-conv-2}
+$\exists k$ s.t. $\tau(k) \geq N$ before $T \leq T_{max} = \big(\frac{N\bar{\alpha}}{\epsilon}\big)^{4}$ with high probability $p \geq 1 - \delta$.
+\end{prop}
+
+\begin{proof}
+We can bound \eqref{pre-limit-T} using Proposition \ref{gamma-bound}:
+
+\begin{align}
+\sum_{k=1}^{K(T)}\Lambda_k + \epsilon K \leq R_{T} \leq \sqrt{\kappa T \beta_{T} \gamma_{T}} \leq \bar{\alpha}T^{3/4}
+\end{align}
+
+where $\bar{\alpha} = \alpha(1/4,(2d+5)/2)$ for the squared exponential kernel. Since $\Lambda_k \geq 0, \ k = 1, \ldots, K$ we get w.h.p. $p \geq 1 - \delta$:
+
+\begin{align}
+K &\leq \frac{\bar{\alpha} \ T^{3/4}}{\epsilon} \\
+\tau_m &= \frac{T}{K} \geq \frac{\epsilon \ T^{1/4}}{\bar{\alpha}}
+\end{align}
+
+where $\tau_m$ denotes the mean of the stopping times $\tau(k), k = 1, \ldots, K$. But this means $\exists k \leq K$ s.t. $\tau(k) \geq \tau_m \geq (\epsilon/\bar{\alpha})T^{1/4} \geq N$ before $T \leq T_{max} = \big(\frac{N\bar{\alpha}}{\epsilon}\big)^{4}$.
+
+\end{proof}
+
+\section{On the optimistic advancement property}
+
+The nonnegativity of \eqref{defn-lambda} throughout the state space, labelled in the assumption \eqref{optim-advance} as the \emph{optimistic advancement property} of the dynamics is a consequence of the \emph{controllability}, from a Control Lyapunov Function point of view:
+
+\begin{defn}
+A \emph{Control Lyapunov Function} (CLF) is a continuously differentiable, proper, positive definite function $V: \mathbb{R}^{n} \to \mathbb{R}_{+}$ such that:
+
+\begin{align}
+\inf_{\sysInput \in \mathcal{U}}\dot{V}(\state) < 0 \label{CLF}
+\end{align}
+
+\end{defn}
+
+If we can find such a function $V(\state), \ \forall \state \in \mathcal{X}_{\traj}$ it means we can steer the system from any point $\state \in \mathcal{X}_{\traj}$ to $\traj$, or equivalently, that we can stabilize the system around $\traj$. For the continuous nonlinear control system:
+
+\begin{align}
+\dot{\state} = \mathbf{f}_c(\state,\sysInput) = \mathbf{A}(\state) + \mathbf{B}(\state)\sysInput \label{control-affine}
+\end{align}
+
+We can rewrite \eqref{CLF} as:
+\begin{align}
+\inf_{\sysInput \in \mathcal{U}} \nabla V^{\mathrm{T}}\big(\mathbf{A}(\state) + \mathbf{B}(\state)\sysInput \big) < 0
+\end{align}
+
+For the discrete time system \eqref{system-dynamics}, since $\mathcal{U}$ is compact \eqref{CLF} becomes:
+\begin{align}
+\min_{\sysInput \in \mathcal{U}} V(\state_{t+1}) - V(\state_{t}) < 0 \label{d-CLF}
+\end{align}
+
+If the cost function $C(\state) = d(\state,\traj)$ is a discrete time CLF obeying \eqref{d-CLF}, then $\lambda(\state)$ is the gap between $0$ and \eqref{d-CLF}:
+\begin{align}
+\lambda(\state) = C(\state_{t}) - C^{*}(\state_{t+1}) = 0 - \big(\min_{\sysInput \in \mathcal{U}} C(\state_{t+1}) - C(\state_{t})\big)
+\end{align}
+
+There is an way to check if the cost function is a discrete time CLF:
+\begin{prop}
+If \eqref{system-dynamics} is a contraction mapping for some $\sysInput = \phi(\state) \in \mathcal{U}$, $\phi(\traj_t) = v_{\Traj}(t)$, then the cost functions are discrete time CLF.
+\end{prop}
+
+\begin{proof}
+$\exists c, \ 0 \leq c < 1$, s.t.
+\begin{align}
+d(\state_{t+1}, \traj_{t+1}) < c \, d(\state_{t}, \traj_{t}) 
+\end{align}
+for some $\phi(\state) \in \mathcal{U}$ with $\phi(\traj_t) = v_{\Traj}(t)$. But this precisely means:
+\begin{align}
+\min_{\sysInput \in \mathcal{U}} C(\state_{t+1}) - C(\state_{t}) < 0
+\end{align}
+\end{proof}
+
+We can relate the \emph{contractability} of the mapping $\mathbf{f}$ to its linearized behaviour:
+
+\begin{prop}
+$\mathbf{f}(\state, \phi(\state))$ is a contraction mapping on $\Omega \subset \mathcal{X}$ if $\forall \state \in \Omega$, $\mathbf{f}(\state, \phi(\state))$ is a homeomorhism and $\left\vert\frac{\partial \mathbf{f}(\state,\phi(\state))}{\partial \state}\right\vert < 1$.
+\end{prop}
+
+\begin{proof}
+Without loss of generality we can consider open balls $B(\state, \epsilon)$, $\forall \epsilon > 0 \ s.t. \ \epsilon < \text{diam}(\Omega) = \sup_{\state \in \partial\Omega} d(\state,s)$ since $\mathcal{X}$ is compact and any $\Omega \subset \mathcal{X}$ can be covered by finitely many open balls. Because $\mathbf{f}(\state, \phi(\state))$ is a homemorphism it takes closed balls $\bar{B}(\traj_{t}, \delta)$ to closed balls $\bar{B}(\traj_{t+1}, \epsilon)$, see Figure.
+
+Dynamics $\mathbf{f}(\state, \phi(\state))$ can then be seen as a transformation that takes $\bar{B}(\traj_t,\delta)$ to $\bar{B}(\traj_{t+1}, \epsilon)$:
+
+\begin{align}
+\int\limits_{\bar{B}(\traj_{t+1},\epsilon)}\! \mathrm{d}\state = \int\limits_{\bar{B}(\traj_t,\delta)}\! \left\vert\frac{\partial \mathbf{f}(\state,\phi(\state))}{\partial \state}\right\vert\mathrm{d}\state
+\end{align}
+Writing in terms of volumes:
+\begin{align}
+\text{Vol}(\bar{B}(\traj_{t+1},\epsilon)) < \text{Vol}(\bar{B}(\traj_t,\delta))
+\end{align}
+
+Hence $\epsilon(\phi(\state)) < \delta$ i.e. for $\state_{t} \in \partial B(\traj_{t+1},\epsilon)$, $d(\state_{t+1}, \traj_{t+1}) < d(\state_{t}, \traj_{t})$.
+\end{proof}
+
+The condition on the determinant of the Jacobian changes if we have a continuous time representation:
+\begin{prop}
+If \eqref{control-affine} when discretized leads to \eqref{system-dynamics}, then $\inf_{\sysInput \in \mathcal{U}} \left\vert\frac{\partial \mathbf{f}_c}{\partial \state}\right\vert < 0, \ \forall \tau \in [t,t+1] \Rightarrow \inf_{\sysInput \in \mathcal{U}} \left\vert\frac{\partial \mathbf{f}}{\partial \state}\right\vert < 1$.
+\end{prop}
+
+
+%\begin{prop}
+%Functions with bounded RKHS-norm are Lipschitz continuous if the kernel is itself Lipschitz continuous and obeys $\inf_{x,x' \in \mathcal{D}} K(x,x') > 0$.
+%\end{prop}
+%
+%\begin{proof}
+%
+%A kernel $K(x,x')$ obeying the reproducing property forms a Hilbert space $\mathcal{H}$ where functions can be written as:
+%\begin{align}
+%f(x) = \sum_{i=1}^{\infty} \alpha_i K(x,x_i) \label{f-representation}
+%\end{align}
+%The RKHS-norm of these functions are bounded:
+%\begin{align}
+%<f,f> = \|f\|_{K}^{2} = \sum_{i,j = 1}^{\infty} \alpha_i \alpha_j K(x_i,x_j) < B \label{f-bound}
+%\end{align}
+%If we assume the kernel is Lipschitz:
+%\begin{align}
+%\sup_{x \in D} |K(x_2,x) - K(x_1,x)| &\leq l_K \|x_2 - x_1\|
+%\end{align}
+%Then using \eqref{f-representation}:
+%\begin{align}
+%|f(x_2) - f(x_1)| &\leq \sum_{i=1}^{\infty} \alpha_i |K(x_2,x'_i) - K(x_1,x'_i)| \\
+%&\leq \sum_{i=1}^{\infty} \alpha_i l_K \|x_2 - x_1\|
+%\end{align}
+%Squaring the sum of $\alpha_i$ and using the bound \eqref{f-bound}:
+%\begin{align}
+%\Big( \sum_{i=1}^{\infty}\alpha_i \Big)^2 = \sum_{i,j=1}^{\infty}\alpha_i \alpha_j < \frac{B}{K_{min}}
+%\end{align}
+%where $K_{min} = \inf_{x,x' \in \mathcal{D}} K(x,x') > 0$. Hence we get:
+%\begin{align}
+%|f(x_2) - f(x_1)| \leq \sqrt{\frac{B}{K_{min}}} \ l_k \|x_2 - x_1 \|
+%\end{align}
+%
+%\end{proof}
+%
+%The intuition here is that the more wiggly the functions get, the more Kernel center points $x_i$ we need to estimate them. $K_{min}$ depending on the diameter of these points leads to the worst-case bound on such functions.
+
+\end{document}

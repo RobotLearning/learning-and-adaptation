@@ -1,0 +1,274 @@
+\documentclass[a4paper]{article}
+\title{Hyperparameter Estimation in R}
+\author{Okan Koc}
+\begin{document}
+\maketitle
+
+\section{1D Estimation}
+In this example we repeat the simple 1-D hyperparameter estimation experiment using R. 
+
+\subsection{Zero-mean}
+First we start by drawing a random function from a zero-mean Gaussian Process with a gaussian covariance function:	
+
+<<fig=TRUE>>=
+# R HYPERPARAMETER ESTIMATION EXPERIMENTS
+library(MASS)
+
+print('Maximum likelihood estimation of hyperparameters...')
+
+# squared exponential covariance function handle
+ker <- function(x1,x2,p) {
+	distsq <- sum((x1-x2)^2)
+	(p[2]^2) * exp(-distsq/(2*(p[1]^2)))
+}
+
+# handle for generating a covariance matrix
+kermat <- function(xs,ker,p) {
+	size <- length(xs)
+	mat <- matrix(0, nrow = size, ncol = size)
+	for (i in 1:size) {
+		for (j in 1:size) {
+			mat[i,j] <- ker(xs[i],xs[j],p)
+		}
+	}
+	mat
+}
+
+# covariance function hyperparameters: 
+# length scale ell and scale sf
+ell <- 1/8; sf <- 1/2
+p <- c(ell, sf)
+# noise scale
+sn <- 0.05
+
+# inform the user
+s <- sprintf('Covariance hyperparameters are: ell = %f, sf = %f, sn = %f', ell, sf, sn)
+print(s)
+
+# GENERATE A ZERO-MEAN FUNCTION DRAWN FROM THE GP 
+n <- 50
+# input variable
+x <- seq(from = 0, to = 1, length.out = 50)
+# form the covariance matrix
+K <- kermat(x,ker,p)
+# mean values
+mu <- rep(0, n);
+y <- mvrnorm(n = 1, mu, Sigma = K, tol = 1e-6)
+# contaminate y
+y <- y + sn * rnorm(n,1)
+
+plot(x,y, main = 'Function values drawn from a kernel with known parameters')
+
+@
+\\
+We minimize the following likelihood function : 
+
+<<>>=
+# negative log likelihood to minimize
+nll <- function(p) {
+	if (length(p) == 3) # no mean estimation
+		vec <- y - mu 
+	else 
+		vec <- y - p[4] * x - p[5] 
+	mat <- kermat(x,ker,p[1:2]) + (p[3]^2) * diag(n)
+	rhks <- vec %*% solve(mat,vec)
+	cplex <- 1/2 * log(abs(det(mat)))
+	nll <- rhks + cplex
+	nll
+}
+
+@
+using the \emph{optim} function in R. The optimization algorithm chosen is the~\emph{L-BFGS-B}, but \emph{CG}, i.e. conjugate gradient, can also be specified:
+
+<<>>=
+# minimization
+ell0 <- runif(1); sf0 <- runif(1); sn0 <- runif(1)
+#out <- nlm(nll, p = c(ell0, sf0, sn0), hessian = FALSE)
+lb <- c(0.01,0.01,0.01)
+out <- optim(par = c(ell0,sf0,sn0), nll, gr = NULL, method = "L-BFGS-B", lower = lb)
+ell_est <- out$par[1]; sf_est <- out$par[2]; sn_est <- out$par[3]
+print('Zero-mean GP hyperparameters:')
+s <- sprintf('ell = %f, sf = %f, sn = %f', ell_est, sf_est, sn_est)
+print(s)
+
+@
+\subsection{Linear-mean}
+We repeat the same procedure, this time with a linear mean added to the gaussian process.
+
+<<>>=
+# REPEAT BY INCLUDING LINEAR MEAN
+slope <- 0.5; intercept <- 1
+s <- sprintf('Mean hyperparameters are: slope = %f, intercept = %f', slope, intercept)
+print(s)
+
+mu2 <- slope * x + intercept
+y <- mvrnorm(n = 1, mu2, Sigma = K, tol = 1e-6)
+# contaminate y
+y <- y + sn * rnorm(n,1)
+
+# minimization
+ell0 <- runif(1); sf0 <- runif(1); sn0 <- runif(1)
+slope0 <- runif(1); intercept0 <- runif(1)
+lb <- c(0.01,0.01,0.01,-1,-1)
+out <- optim(par = c(ell0,sf0,sn0,slope0,intercept0), nll, gr = NULL, method = "L-BFGS-B", lower = lb)
+ell_est <- out$par[1]; sf_est <- out$par[2]; sn_est <- out$par[3]
+slope_est <- out$par[4]; intercept_est <- out$par[5]
+print('Covariance hyperparameters:')
+s1 <- sprintf('ell = %f, sf = %f, sn = %f', ell_est, sf_est, sn_est)
+print(s1)
+print('Mean hyperparameters:')
+s2 <- sprintf('slope = %f, intercept = %f', slope_est, intercept_est)
+print(s2)
+
+@
+\section{2D Estimation}
+
+Here we do hyperparameter estimation using the geostatistics package \emph{geoR}. This package supplies the function \emph{likfit} for Maximum Likelihood (ML) and Restricted Maximum Likelihood (REML), so it is not necessary to provide a custom likelihood function.
+
+\subsection{Zero-mean}
+We first start by generating a 2D uniform mesh with 100 points:
+
+<<>>=
+# R hyperparameter estimation experiments
+library(MASS)
+library(geoR)
+
+print('Maximum likelihood estimation of hyperparameters...')
+
+# cov.spatial can be used also!
+# squared exponential covariance function handle
+ker <- function(x1,x2,p) {
+	mat <- diag(p[1:2])
+	mahalanobis_sq <- (x1-x2) %*% solve(mat,x1-x2)
+	(p[2]^2) * exp(-mahalanobis_sq) 
+	# we don't divide by two since geoR uses this form
+}
+
+# handle for generating a covariance matrix
+kermat <- function(xs,ker,p) {
+	size <- length(xs[,1])
+	mat <- matrix(0, nrow = size, ncol = size)
+	for (i in 1:size) {
+		for (j in 1:size) {
+			mat[i,j] <- ker(xs[i,],xs[j,],p)
+		}
+	}
+	mat
+}
+
+# 2D ESTIMATION WITH ZERO MEAN
+L <- c(0.2, 0.5); sf <- 1
+phi <- L[2]/L[1] # anisotropy ratio parameter 
+p <- c(L, sf)
+# noise scale
+sn <- 0.1
+
+# inform the user
+s <- sprintf('Covariance hyperparameters are: L = [%f, %f], sf = %f, sn = %f', L[1], L[2], sf, sn)
+print(s)
+
+# generate the mesh of input points
+n <- 10
+x <- seq(from = 0, to = 1, length.out = n)
+xx <- matrix(rep.int(x, n), nrow = n, byrow = TRUE)
+xxx <- as.vector(xx)
+yy <- t(xx)
+yyy <- as.vector(yy)
+coords <- matrix(c(xxx,yyy), ncol = 2)
+# apparently we can use expand.grid instead!
+# coords <- expand.grid(x, x)
+
+@
+
+Now we generate function values at these points:
+
+<<fig=TRUE>>=
+# generate the covariance matrix
+# form the covariance matrix
+K <- kermat(coords,ker,p)
+# mean values
+mu <- rep(0, n*n);
+data <- mvrnorm(n = 1, mu, Sigma = K, tol = 1e-6)
+# contaminate data
+data <- data + sn * rnorm(n*n,1)
+
+# plot y values
+data_mat <- data
+dim(data_mat) <- c(n,n)
+image(x,x,data_mat, main = 'Function values drawn from a kernel with known parameters')
+
+@
+\\
+Maximum likelihood fitting is performed to estimate the parameters. The package documentation claims that several initial values for the hyperparameters can be provided but the algorithm fails in this case.
+
+<<>>=
+## ML LIKELIHOOD FITTING 
+# using function 'likfit' from package 'geoR'
+sn0 <- seq(from = 0.01, to = 0.2, length = 10)
+L0 <- seq(from = 0, to = 1.1, length = 5) 
+sf0 <- seq(from = 0, to = 2.2, length = 5)
+psiR0 <- c(0,1,2,3)
+# a matrix can be used to provide several initial values
+par0 <- matrix(c(L0, sf0), ncol = 2)
+
+ml <- likfit(coords = coords, data = data, trend = "cte", 
+	 	fix.nugget = FALSE, nugget = 0.04,
+	 	ini.cov.pars = c(0.3, 0.5),
+	 	cov.model = "gaussian", 
+       	fix.psiA = TRUE, fix.psiR = FALSE, psiR = 2,
+	 	lik.method = "ML")
+# output the results
+print(summary(ml))
+
+@
+
+Nugget parameter $\tao$ corresponds to the standard deviation of the noise that contaminates the function values. Anisotropy length parameter $\phi_{R}$ corresponds to the ratio between the larger and the smaller length scale parameters $l_1$ and $l_2$, $\phi_{R} = l_2/l_1$. That is, in the 2D Automatic Relevance Determination (ARD) case, the matrix :
+
+\begin{equation*}
+\mathbf{X} = \left(
+\begin{array}{ccc}
+l_{1}^{2} & 0             \\
+0             & l_{2}^{2} \\
+\end{array} \right)
+\end{equation*}
+
+causes anisotropy in the gaussian kernel :\\
+
+\begin{equation*}
+k(x,x') = \sigma_f^2 \exp{(x-x')^{T}\mathbf{\Sigma}^{-1}(x-x')}
+\end{equation*}
+
+\subsection{Linear-mean}
+In this case, we also a linear mean with intercept, i.e. a line of the form: $y = \beta_1 x_1 + \beta_2 x_2 + \beta_0$. This can be triggered in the \emph{likfit} function by specifying \emph{trend = 1st} as an argument.
+Restricted likelihood (REML) method can be selected to estimate the \emph{Generalized Least Squares} estimates of the $\beta$ parameters as well as estimating the covariance hyperparameters.
+
+<<>>=
+## GENERATE FUNCTION VALUES WITH LINEAN MEAN WITH INTERCEPT
+slope <- c(0.5,1); intercept <- 1
+s <- sprintf('Mean hyperparameters are: slope = [%f, %f], intercept = %f', 
+              slope[1], slope[2], intercept)
+print(s)
+mu2 <- coords %*% slope + intercept
+data2 <- mvrnorm(n = 1, mu2, Sigma = K, tol = 1e-6)
+# contaminate y
+data2 <- data2 + sn * rnorm(n*n,1)
+
+## REML LIKELIHOOD FITTING
+sn0 <- seq(from = 0.01, to = 0.2, length = 5)
+L0 <- seq(from = 0.01, to = 1.1, length = 5) 
+sf0 <- seq(from = 0.01, to = 2.2, length = 5)
+psiR0 <- c(0,1,2,3)
+# a matrix can be used to provide several initial values
+par0 <- matrix(c(L0, sf0), ncol = 2)
+
+reml <- likfit(coords = coords, data = data2, trend = "1st", 
+	 	fix.nugget = FALSE, nugget = 0.04,
+	 	ini.cov.pars = c(0.3, 0.5),
+	 	cov.model = "gaussian", 
+       	fix.psiA = TRUE, fix.psiR = FALSE, psiR = 1.5,
+	 	lik.method = "REML")
+# output the results
+print(summary(reml))
+
+@
+\end{document}

@@ -1,0 +1,120 @@
+% NOT FOR ICML!
+%\IEEEoverridecommandlockouts             
+%\overrideIEEEmargins
+
+\usepackage{amsthm}
+\usepackage{graphicx}
+%\usepackage{cite}
+\usepackage{url}
+\usepackage{epstopdf}
+\usepackage{graphics} % for pdf, bitmapped graphics files
+\usepackage{epsfig} % for postscript graphics files
+\usepackage{times} % assumes new font selection scheme installed
+
+%Thorem environment http://en.wikibooks.org/wiki/LaTeX/Theorems
+\newtheorem{prop}{Proposition}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{prop2}{Proposition}
+\newtheorem{lem}{Lemma}
+% Math related
+\usepackage{amssymb}  % assumes amsmath package installed
+\usepackage{amsmath} % assumes amsmath package installed
+%\usepackage{mathptmx} % assumes new font selection scheme installed
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{transparent}
+
+%matlabpsfrag
+\usepackage{pstool}
+
+% For algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% strike out
+\usepackage{soul}
+
+
+%SVG-Latex Stuff
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Path for your figures
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Set the paths where all figures are taken from:
+\graphicspath{{data/}}
+\newcommand{\executeiffilenewer}[3]{%
+ \ifnum\pdfstrcmp{\pdffilemoddate{#1}}%
+ {\pdffilemoddate{#2}}>0%
+ {\immediate\write18{#3}}\fi%
+}
+
+\newcommand{\includesvg}[1]{%
+% \executeiffilenewer{#1.svg}{#1.pdf}%
+% {inkscape -z -D --file=#1.svg %
+% --export-pdf=#1.pdf --export-latex}%
+ \input{data/#1.pdf_tex}%
+}
+
+\newcommand{\note}[1]{{\color{cyan}[Note: #1]}}
+\newcommand{\todo}[1]{{\color{ForestGreen}[TODO: #1]}}
+
+
+% http://tex.stackexchange.com/questions/16429/equation-spanning-two-columns-in-ieeetran
+%\usepackage{stfloats}
+
+% dash line
+\usepackage{arydshln}
+% cleverref
+%\usepackage{cleveref}
+
+% fig2texPS 
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest} 
+\pgfplotsset{plot coordinates/math parser=false}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Define your own commands here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Bruch}[2]{{}^{#1}\!\!/\!_{#2}}
+\renewcommand{\labelenumi}{\roman{enumi}.)}
+
+%% custom macros
+\newcommand{\state}{x} % used to denote the system states
+\newcommand{\traj}{s} % used to denote the point on the trj
+\newcommand{\Traj}{\Sigma}
+\newcommand{\sysInput}{u} % used to denote the system inputs
+\newcommand{\context}{c} % used to denote contexts
+\newcommand{\cost}{q} % used to denote stage costs
+\newcommand{\ctxaction}{z} %used to denote contexts and actions combined
+\newcommand{\observations}{\mathbf{y}} % used for the observed output
+\newcommand{\dynamics}{f}
+\newcommand{\dynamicsNominal}{f_{\mathrm{nom}}}
+\newcommand{\policy}{\mathbf{\pi}}
+\newcommand{\ValueFunction}{J}
+\newcommand{\episode}{\ell} % used for episode number
+\newcommand{\numepisode}{L} % total number of episodes
+\newcommand{\threshold}{\epsilon_s}
+\newcommand{\alg}{\emph{TGP}}
+\newcommand{\dataset}{Z}
+
+\newcommand{\aatop}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}
+\renewcommand{\theequation}{\arabic{equation}}
+%\numberwithin{equation}{subsection}
+
+%\newenvironment{proof}[1][Proof]{\begin{trivlist}
+%\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{definition}[1][Definition]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{example}[1][Example]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+%\newcommand{\qed}{\nobreak \ifvmode \relax \else
+%      \ifdim\lastskip<1.5em \hskip-\lastskip
+%      \hskip1.5em plus0em minus0.5em \fi \nobreak
+%      \vrule height0.75em width0.5em depth0.25em\fi}
+      
+      
+\DeclareMathOperator*{\plim}{plim}
+% \def\MR#1{\href{http://www.ams.org/mathscinet-getitem?mr=#1}{MR#1}}
+

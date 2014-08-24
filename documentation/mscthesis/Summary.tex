@@ -1,0 +1,26 @@
+\chapter{Summary}
+\label{s:Summary}
+%Summarize the presented work. Why is it useful to the research field or institute?
+
+In this thesis, an intuitive upper-confidence style algorithm based on Gaussian Process optimization (CGP-UCB) is implemented on trajectory tracking for control systems where an unknown disturbance dynamics is present. Such dynamics, if severe, can prevent more conventional methods such as Model Predictive Control or Iterative Learning Control from tracking the trajectory. This algorithm learns over trajectories, real time, the stage cost of the partially unknown system dynamics. It works by sub-optimally solving the exploration-exploitation dilemma: it \emph{explores} new control inputs when the uncertainty of that input is high enough, and it \emph{exploits} the learned dynamics (the mean value) as it gets more and more sure of the disturbance dynamics of the system. 
+
+The algorithm was for the first time presented in \cite{Krause1} and then extended to the contextual case in \cite{Krause2}. In Chapter \ref{Introduction}, we reviewed Gaussian Processes and then described the contextual bandits in \ref{ContextBandit}. In Chapter \ref{Chapter1}, we started by reviewing ILC and after mentioning ILC's limitations, we presented the proposed method in \ref{methodology}. In the results section \ref{Results1} some results have been presented where we show learning take place. It is also shown that a significant amount of knowledge can be transferred even between cases where the reference trajectories are not the same. As long as the disturbance dynamics is smooth enough over the state space, the contextual framework helps to transfer knowledge over different trajectories.
+
+The sublinear regret proofs presented in \cite{Krause1} and \cite{Krause2} hold only when the hyperparameters of the GP from which the function to be optimized is drawn, is completely known. In reality, of course, this assumption is not realistic. We have shown in Chapter \ref{Chapter2}, how estimation of hyperparameters can be performed using Maximum Likelihood Estimation (ML). The author is currently unaware of results that hold under parametric mismatch, a point that deserves to be studied more in the literature.
+
+\section{Discussion}
+
+\section{Future Work}
+\label{ss:FutureWork}
+
+We believe that investigating this issue could yield new insights on GP optimization and is one of many possible ways to extend the work. Adaptive Hyperparameter Estimation, where hyperparameters can be adapted over different trial runs using particle filter-like methods are of ongoing concern. An initial attempt at such a method has been presented in \cite{Ginsbourger} where they keep a \emph{benchmark of experts}, a set of weighted different hyperparameter models and values. Alternatively, pursuing Bayesian methods for hyperparameter estimation, such as MCMC for the integral given in (\ref{evidence}) might be useful.
+
+In Appendix \ref{app:code} it can be observed that the Restricted Maximum Likelihood (REML) estimates for hyperparameters are not much different from ML estimates. Hence it was concluded in Chapter \ref{Chapter2} that mean parameter estimation might be altogether avoided. However more work needs to be done in order to assert this claim conclusively. 
+
+On the control side, stability and robustness of the proposed method are critical for a safe implementation. Proposition \ref{Prop:1} assumes the existence of a method $H$ that can effectively generate converging trajectories, i.e. with sublinear regret. The construction of $H$ is an important open problem. Perhaps it can be computed offline with Dynamic Programming by discretizing the state space. Or as suggested at the end of \ref{stability}, it can be cast as variance minimization at each step, and implemented if sufficient online computational resources are available. However, such a method, even if it can be explicitly constructed, will only be effective probabilistically. If implemented on a test-bed, an additional layer of safety has to be provided, as in the ILC method presented in \ref{ILC}, that will shutdown the operation if the deviation over the desired trajectory is above the safety limits, or perhaps trigger a more-conservative control method that will bring the operation to a safe halt. Over time, such a fail-safe method (along with $H$) will be needed less and less, as the dynamics is learned. Then, the learned stage cost can be rolled-out over a fixed horizon as in Model Predictive Control (MPC), to make the system more stable under constraints and new disturbances.
+
+%Possible ways to extend the work.
+% Extending covariance structure by considering Matern or even Exponential Distribution
+% Optimization related issues
+% Perturbation analysis
+% REML related extensions

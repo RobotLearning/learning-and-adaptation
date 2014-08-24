@@ -1,0 +1,12 @@
+\section{Conclusion}\label{sec:conclusion}
+In this paper, we have proposed and analyzed $\alg$, a GP-optimization based RL-algorithm, demonstrating its effectiveness in learning unknown dynamics and knowledge transfer between different contexts. We have validated its performance in numerical examples. Unknown dynamics, if severe, can prevent more conventional methods such as Model Predictive Control or Iterative Learning Control from tracking any given trajectory. $\alg$ on the other hand learns to track online a scalar cost function, and converges to a given trajectory under mild assumptions. It works by solving the exploration-exploitation problem: it \emph{explores} new control inputs when the uncertainty of that input is high enough, and it \emph{exploits} the learned dynamics as it gets better at predicting the cost function.
+
+The sublinear regret proofs presented in \citet{Srinivas09} and \citet{Krause11} hold only when the hyperparameters of the GP from which the function to be optimized is drawn are known. In practice estimation of hyperparameters can be performed using Maximum Likelihood and its variants but we are currently unaware of any results on the sensitivity analysis. We have evidence to believe that under mild mismatch only the speed of convergence is affected, however changes in the kernel structure can hinder learning. This leads to the problem of adaptive estimation of the covariance functions \cite{Ginsbourger08}, which will play an increasing role in learning under unpredictable environments, such as those studied in RoboEarth \cite{Waibel11}.
+
+%Theorem \ref{theorem1} and Proposition \ref{Proposition2} depend on the sublinear cumulative regret of CGP-UCB. More could be said about the stochastic convergence if the distribution of cumulative regret were known. The transfer learning gain in \eqref{transfer-learning} can also be calculated in this way. Extreme Value Theory is needed to investigate the distribution of the maximum of a Gaussian Process under different kernels. Results in \cite{McCormick00} and \cite{James07} indicate that the mean and the maximum of a Gaussian Process are asymptotically independent and that the maximum follows the \emph{Gumbel} distribution as a limiting distribution in certain cases.
+
+%\section*{Acknowledgment}
+%
+% Acknowledgements should only appear in the accepted version. 
+%\textbf{Do not} include acknowledgements in the initial version of
+%the paper submitted for blind review.

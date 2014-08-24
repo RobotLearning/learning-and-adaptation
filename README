@@ -1,0 +1,67 @@
+Participants: Okan Koc, Mohanarajah Gajamohan, Prof. Andreas Krause
+Project Name: Gaussian Process Optimization for Trajectory Tracking
+
+Note: GPML toolbox (Rasmussen) is necessary to run hyperparameter
+      estimation.
+
+CONTENTS 
+-----------------------------------------------------------------------
+
+Classes :
+
+Controller - Superclass for the controllers. 
+             Does not contain much except for variables used in plotting.
+
+Estimator  - Calls the hyperparameter estimation routine after 
+             organizing the control experiments.
+
+Filter     - Includes the Kalman filter used in ILC.
+
+ILC        - Iterative Learning Control algorithm of Angela Schoellig.
+
+Model      - Superclass for the Quadrotor class. 
+             Contains methods that can be used by all subclasses.
+
+MPC        - A very inefficient Nonlinear Model Predictive Control
+             implementation.
+
+Quadrotor  - Class responsible for all quadrotor specific methods.
+
+TGP        - Tracking with Gaussian Processes
+
+Trajectory - Class containing performances in 
+             all episodes by all 3 controllers 
+
+
+Scripts:
+
+episodic_learning - Runs the learning result for all 3 controllers.
+transfer_learning - Runs the transfer learning results.
+quad_initialize   - Initializes the parameters for quadrotor.
+
+Functions:
+
+fix_root   - Fixes root for Linux or Windows.
+ker_matrix - Constructs the covariance matrix used in GP-update.
+ker_matrix_iter - Constructs the matrix iterative 
+                  (useful in GP-optimization).
+ker_vector - Constructs the covariances between dataset and test point.
+kernel     - Handle for the kernel function.
+             Can be squared exponential (iso/ard) or linear (iso/ard).
+quad_feas_con - Feasibility constraints function for the quadrotor.
+                Called by quad_traj_gen.
+quad_traj_gen - Script running the trajectory generation using splines
+                method for quadrotors.
+
+         
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,84 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% ICML 2014 LATEX SUBMISSION FILE %%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% do we need this package with icml
+%\usepackage{subfigure} 
+
+% Include packages here
+\include{gajan-preamble}
+% For citations
+\usepackage{natbib}
+
+% As of 2011, we use the hyperref package to produce hyperlinks in the
+% resulting PDF.  If this breaks your system, please commend out the
+% following usepackage line and replace \usepackage{icml2014} with
+% \usepackage[nohyperref]{icml2014} above.\part{title}
+\usepackage{hyperref}
+
+% Packages hyperref and algorithmic misbehave sometimes.  We can fix
+% this with the following command.
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Employ the following version of the ``usepackage'' statement for
+% submitting the draft version of the paper for review.  This will set
+% the note in the first column to ``Under review.  Do not distribute.''
+\usepackage{icml2014} 
+% Employ this version of the ``usepackage'' statement after the paper has
+% been accepted, when creating the final version.  This will set the
+% note in the first column to ``Proceedings of the...''
+%\usepackage[accepted]{icml2014}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Trajectory Tracking with Gaussian Processes}
+
+\begin{document} 
+
+\twocolumn[
+\icmltitle{Gaussian Process Optimization based Learning for Trajectory Tracking}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2014
+% package.
+\icmlauthor{Okan Koc}{okankoc@gmail.com}
+\icmlauthor{Mohanarajah Gajamohan}{gajan@ethz.ch}
+\icmladdress{Institute of Dynamic systems and Control, Department of Mechanical and Process Engineering, ETH  Zurich, 8092 Zurich, Switzerland}
+\icmlauthor{Andreas Krasue}{krausea@ethz.ch}
+\icmladdress{Department of Computer Science, ETH Zurich, 8092 Zurich, Switzerland}
+% You may provide any keywords that you 
+% find helpful for describing your paper; these are used to populate 
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Gaussian process, multi-armed bandits, exploration-exploitation dilemma, nonlinear optimization, trajectory tracking, machine learning, ICML}
+
+\vskip 0.3in
+]
+
+\begin{abstract} 
+Systems that work in a repetitive manner use Iterative Learning Control (ILC) algorithms to iteratively improve the performance over a given repeated task or trajectory. 
+%The feed-forward control signal is modified in each iteration to reduce the error or the deviation from the given reference trajectory. 
+The limitation with ILC is that it assumes the task or the trajectory to be fixed over iterations. ILC cannot handle the cases when the trajectory is modified or changing over time, and the %iterative learning 
+controller must start learning from scratch. In this paper we present a reinforcement learning algorithm that we call $\alg$, prove its convergence for trajectory tracking and show that a significant amount of knowledge can be transferred even between cases where the reference trajectories are not the same. 
+%using CGP-UCB, an intuitive upper-confidence style algorithm based on Gaussian Processes (GP), 
+
+\end{abstract} 
+
+\input{introduction}
+\input{problemstatement}
+\input{algorithm}
+\input{numericalexamples}
+\input{conclusion}
+
+% In the unusual situation where you want a paper to appear in the
+% references without citing it in the main text, use \nocite
+%\nocite{langley00}
+
+\bibliography{cgpucb-dynsys}
+\bibliographystyle{icml2014}
+
+\input{appendix}
+
+\end{document} 

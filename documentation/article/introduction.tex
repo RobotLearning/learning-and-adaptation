@@ -1,0 +1,37 @@
+\section{Introduction}
+
+Control systems are designed to regulate the behavior of dynamical systems and make them follow a human-assigned task or trajectory. They base their regulation on a physical \emph{nominal} model, often derived from first principles. However, whenever there is an uncertainty in the model, such as repeating disturbances not taken into account in a complex environment, the control system will need to learn from its past behavior and compensate for the inaccuracy of the nominal model. Machine Learning tools can be employed in an \emph{Adaptive Control} fashion to guide this learning process.
+
+For systems that work in a repetitive manner, such as robotic manipulators and chemical plants, Iterative Learning Control (ILC) algorithms are used to improve on the performance. In ILC, the feed-forward control signal is modified in each iteration to reduce the error or the deviation from the given task or reference trajectory. A good analogy is a basketball player shooting a free throw from a fixed position: during each shot the basketball player can observe the trajectory of the ball and alter the shooting motion in the next attempt \cite{Bristow06}. 
+
+The limitation with ILC is that it assumes a fixed task or trajectory. While this is a reasonable assumption to make in some repeated tasks, ILC is not \emph{learning} in the proper sense: it fails to generalize over different tasks and cannot handle the cases when the trajectories are modified. In all such cases, the Iterative Learning Controller will need to start from scratch, throwing away useful data. Data from different tasks can be used to generalize, a matter of paramount importance in complex tasks. 
+
+We therefore look at the problem of \emph{generalization} and show that a significant amount of knowledge can be transferred even between cases where the reference trajectories are not the same. A basketball player does not have to learn the free throw motion from scratch each time he finds himself in a slightly different position. We call these cases or reference trajectories \textit{contexts}. Context can change in a given task and it is the responsibility of the autonomous agent or the learning controller to adapt to different contexts. 
+
+The motivation for transfer learning under different contexts comes mainly from the RoboEarth project \cite{Waibel11}, a robot specific knowledge repository where robots share and learn from each others' experience.  The ability to transfer knowledge even under different contexts will significantly improve the performance of future robots. %RoboEarth. 
+% 
+%operating in a certain location 
+For example, consider a robot learning to pour tea into a cup and over time perfecting the motion. The learned pouring motion can be uploaded to a central database, marked with the hardware-specifics of the particular robot as well as the size and shape of the teapot as context. Another robot with slightly different hardware, holding a different teapot, can download the stored motion as a prior and adapt it to its particular context, thereby eliminating the need to learn the motion from scratch.
+
+In this paper, we introduce a reinforcement-learning (RL) algorithm called $\alg$ that learns to track trajectories in state space online. $\alg$ stands for \emph{(trajectory) tracking with Gaussian Processes}. Specifically, the proposed algorithm uses Gaussian Process Optimization (GPO) in the bandit setting to track a given trajectory. It implicitly learns the dynamics of the system, and in addition to improving the tracking performance, it facilitates knowledge transfer between different trajectories. 
+
+%In this paper, we look at the trajectory tracking problem where the dynamics of the system is not completely known. Specifically, we propose an algorithm that learns to optimize the stage costs of a discrete time system with repeating disturbances. The proposed algorithm uses Gaussian Process optimization in the bandit setting to track the minimum of the stage costs. By learning to optimize the stage costs we implicitly learn the dynamics of the system, and in addition to improving the tracking performance, our proposed algorithm facilitates knowledge transfer between different trajectories. 
+
+\paragraph*{Related Work.}Gaussian Processes (GP) are increasingly applied in control theory, where they are used to learn the unknown system dynamics.  \citet{Ko07} propose a hybrid-GP approach combined with reinforcement learning to control an autonomous blimp. Their framework requires them to learn the dynamics itself with multiple GP regressions whereas we use GPO to track the global minimum of an unknown, \emph{scalar} cost function, as will be detailed in the next sections. In \cite{Deisenroth11a,Deisenroth11b} the authors first learn the dynamics with GP regression. In the second step policies for a parameterized controller are learnt by propagating through the GP model. This algorithm, called PILCO, involves necessarily long offline calculations and does not have a guarantee for convergence. Unlike PILCO, $\alg$ incorporates feedback and can generalize over different trajectories. Furthermore we prove that $\alg$ converges to the tracked trajectory under mild assumptions.
+% as a function of input and context
+
+% update references?
+Gaussian process optimization literature proposes several heuristics such as Expected Improvement \cite{Jones01} and Most Probable Improvement \cite{Lizotte07} for trading off exploration and exploitation. The first method with provable sublinear regret was proposed in \cite{Srinivas09} and extended to the contextual setting in \cite{Krause11}. We apply this approach to dynamical systems in this paper.
+
+\paragraph*{Summary.} Our main contributions are as follows:
+
+\begin{itemize}
+\item We propose $\alg$, a reinforcement learning algorithm that efficiently learns to track a given trajectory.
+\item We prove that $\alg$ under mild assumptions, learns to track the given trajectory arbitrarily well.
+\item With $\alg$ we establish a novel connection with \emph{transfer learning} and present a metric to quantify knowledge transfer. % we establish a framework to analyze
+\item We show in numerical examples, the proposed approach and evaluate its performance both in trajectory tracking and in transfer learning by comparing with the state of the art control algorithms.
+\end{itemize}
+
+% Unnecessary
+%The rest of the paper is organized as follows: Sec.~\ref{sec:bground} introduces the methods used throughout the paper and presents related work. The problem statement and the proposed learning algorithm is presented next in Sec.~\ref{sec:ps}, followed by a theoretical analysis in Sec.~\ref{sec:analysis}. We illustrate the efficiency of the approach in Sec.~\ref{sec:numerical_examples} and conclude in Sec.~\ref{sec:conclusion}, pointing also to possible future work.
+% why are sections capitalized and abbreviated?

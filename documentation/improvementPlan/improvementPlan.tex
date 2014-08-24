@@ -1,0 +1,186 @@
+% Improvement plan for Trajectory Tracking with Gaussian Processes (TGP)
+% Okan Koc, Gajamohan Mohanarajah, Andreas Krause
+
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\newtheorem{prop}{Proposition}[section]
+\newtheorem{thm}{Theorem}
+\newtheorem{defn}{Definition}
+
+\author{Okan Ko\c c}
+\title{Improvement plan for TGP}
+\begin{document}
+\maketitle
+
+\section{ICML'04 submission reviews}
+\emph{Reviewer 1}: \\
+
+This paper introduces TGP, a novel algorithm which uses Gaussian Processes to optimize trajectory tracking. Unlike prior algorithms such as ILC, the authors claim that TGP is better able to generalize from past training experiences than other algorithms.
+
+On the whole, the idea seems like it could have merit, but the presentation could be clearer, and the experimental validation is not sufficiently persuasive.
+
+Detailed comments follow:
+
+In the introduction, I would quibble with the claim that ILC "is not learning in the proper sense". Why not just say that it doesn't generalize to novel trajectories, as you do, and leave it at that?
+
+What exactly do you mean when you talk about "repeated disturbances"? Is the claim here that TGP only works when the underlying dynamics are deterministic, but different from the nominal modeled dynamics? Would "deterministic disturbances" be a better way of phrasing it?
+
+Stochasticity in the dynamics is not really addressed well in this paper. In related RL work, it is common to speak in terms of a distribution $p(x_{t+1} | x_t, u_t)$ in contrast to equation (1). How important is it that dynamics are deterministic?
+
+Footnote 1: is it fundamental to discard penalties on controls? That's a common and important feature of many control schemes, especially when running on real hardware.
+
+Notation is unclear. Certain variables (e.g. lowercase delta, lowercase sigma) are way overused and not always defined. What is the difference between $\sigma_n$, $\sigma_t$, and $\sigma_T$? Delta the free parameter vs delta the difference between cost and expected cost? 
+
+How the minimization of (7) is performed is not clear, although the method is alluded to in lines 416-420. What are the restrictions on the dynamical system? Is differential flatness an essential property? How is it exploited?
+
+The trackability assumption is actually quite strong. In lots of control literature (e.g. mapping motion-captured human performance to humanoid robots), it is by no means assumed that the platform is capable of exactly reproducing the demonstration trajectory.
+
+Section 3.2 is a fairly weak categorization of generalizing ability. The main claim here seems to be only that learning after switching trajectories is no worse than starting from scratch. Not clear what the actual benefit is. (See discussions of runtime below.)
+
+Experimental evaluations: MPC is a clear strawman here, and shouldn't be included for comparison's sake. It is obviously useless if you don't update the model to reflect model error. How does PILCO (or other modern policy search methods, especially the "multi-task" variant of PILCO [Deisenroth ICRA 2014], which also aims to generalize) do on this problem? 
+
+Plot in figure 3 gives no sense of convergence for either ILC or the proposed method. What was the criterion used to determine that trials should stop at 6 episodes? A particularly skeptical reader might wonder if the condition was to stop at the first iteration where TGP outperformed ILC.
+
+Even without comparisons to more recent algorithms, the experiments here don't do a good job of illustrating how the proposed method copes with various mismatches between nominal and real models. In short, equation (10) suggests there are interesting performance limitations and tradeoffs, and we're only seeing a tiny slice of experimental validations.
+
+For the generalization demonstration, the trajectories all look fairly similar. Furthermore, what really matters for generalization is runtime (esp. given discussion of PILCO's "long offline calculations" in line 170). ILC's runtime per iteration is linear in trajectory size, whereas a GP will presumably grow cubically in the number of points seen. Does the generalization pay off in runtime? What happens *after* episode 1? Does ILC catch up to TGP after some number of iterations? \\
+
+\emph{Reviewer 2}: \\
+
+The paper introduces a reinforcement learning (RL) algorithm for the task of tracking a predefined trajectory for a discrete-time deterministic nonlinear dynamical system.
+It is assumed that a nominal plant (dynamical system) is known, which is in general different from the true plant. At each episode, a new desired trajectory is given and the algorithm chooses actions to minimize a cost functional while learning the difference between the true and the nominal plants.
+The balance between exploitation and exploration is achieved by using Contextual Gaussian Process Upper Confidence Bound (CGP-UCB) algorithm of Krauss and Ong. The context here is the current true state and the next desired state to be tracked. The paper provides a theoretical result showing that if we try for long enough, in one of the episodes the tracking error would be small (L579). The paper experimentally compares the method with an Iterative Learning Controller (ILC) that does not take into account the context and a nonlinear Model Predictive Control (MPC) with a short horizon, which is not adaptive to the true dynamics of the plant.
+
+I have several concerns about this paper:
+
+1) The algorithm does not take into account the sequential nature of the dynamical system. Even if the dynamics of the system is completely known, so the regret is zero, the best action chosen at each time step only optimizes the instantaneous cost without considering the sequential and long-term effects of that choice. This makes it different from the usual RL setup.
+
+2) At a few points, the paper has some mistakes that made it quite confusing for me. One of them is at L211-12 and in the definition of regret $r_t = q(u_t;c_t) - q^*$. Is $q^*$ a fixed number for all t or not? In the next line, $q^*_t$ is defined, so it suggests that it is not. But then later, in inequality (10), which is reported from Krauss and Ong, it is $q^*$ again. A few pages later, in equation (13), we have $q^*_{t+1}$. In the proof of Theorem 3.1, in the second inequality of (19), the authors use (10) to upper bound the regret, which is stated for the regret defined based on $q^*$. However, the left inequality in (19) is based on (17), which in turn is based on (12), which only makes sense if the regret is defined as $r_t = q_t - q^*_t$. If we refer to CGP-UCB paper, we see how the regret should be defined ($r_t = q_t - q^*_t$).
+
+The authors should have been much more careful about this.
+
+3) The theoretical result of the paper is weak. The existence of an episode such that the cost function for that episode is smaller than an epsilon is not strong enough. If it is not possible to have a strong theoretical result, maybe it is better to have more extensive experiments.
+
+4) The framework is limited to deterministic systems. How can it be generalized to stochastic dynamical systems?
+
+5) The Trackability assumption is not as mild as it seems. The reason is that it is much stronger than the notion of Controllability (in standard control theory sense, not the one used in the paper). As a simple example, consider a linear system defined by:
+\begin{equation}
+x_{t+1} = A x_t + B u_t
+\end{equation}
+with $x \in R^d$ and $u \in R^m$ with $m < d$.
+Suppose that $x_0 = 0$ and we want to go to $x_1 = 1$ (a d-dim vector with all components being equal to 1). In this case, $u_0$ should be chosen such that it satisfies $1 = B u_0$. But when $m < d$, this is not possible.
+
+6) Other minor issues: L458: There is a $\lambda_0$ missing in the definition of $q_{1l}$. L552: In (19), the summation should be from $l = 1$ to $L(T)$ instead of $K(T)$. \\
+
+\emph{Reviewer 3}: \\
+
+This paper proposes an algorithm for reinforcement learning to track a given trajectories using a Gaussian process with the knowledge of a nominal model of the dynamics, which can have errors. The key idea in the proposed approach is the use of the realized cost, which is given by a target point and a realized point, ***relative to*** the predicted cost, which is given by a targeted point and the point predicted by the nominal model. The proposed approach chooses the action that achieves the minimum lower confidence bound of this relative cost.
+
+I do not quite understand why the proposed approach is expected to perform well. Why is it good to choose the actions that result in low relative cost? The analysis in Section 3.2 shows that the algorithm converges, but the paper does not give sufficient intuition as to why the proposed approach performs well.
+
+When a nominal model is known, a more natural approach would be to incorporate that nominal model in the prior distribution of the Gaussian process. What is wrong with this more natural approach, and what is the advantage of the proposed approach over this more natural approach?
+
+Figure 3: The advantage of the proposed TGP over the standard approach of ILC is unclear from the figure. What will happen when the episode is extended beyond 6? I believe that there are cases where TGP outperforms ILC, but the experimental settings are quite limited, and it is unclear when TGP can outperform ILC.
+
+The more significant benefit of TGP over ILC appears to be in the ability of transfer learning, but this is also unclear from the paper. In particular, the settings of the experiments in Section 4.3 are not adequately described. It only says that three random trajectories are used, but exactly how these trajectories are generated, and how do they differ from each other? Also, it is hard to see when and how much TGP can benefit from transfer learning from this limited set of experiments. 
+
+Proposition 3.2 suggests that transfer learning does not hurt, but I do not quite understand intuitively why the proposed approach is expected to get benefit from transfer learning. Proposition 3.2 does not quite prove the benefit of transfer learning, because doing nothing does not hurt either. Intuitive explanation about how the proposed approach gets benefit from transfer learning would help.
+
+366: What does "explore ... the difference" mean? We usually explore what we have not tried.
+710: Sum of Squared Errors (SSE).
+
+\section{Summary of reviewer concerns}
+
+The important issues and concerns raised by the reviewers are summarized below:
+
+\begin{itemize}
+\item Experimental validation is not sufficiently persuasive. More extensive experiments and better descriptions are needed.
+\item Can TGP handle stochasticity, i.e. $p(x_{t+1} | x_t, u_t)$ generalizing $x_{t+1} = f(x_t,u_t)$, in the dynamics?
+\item Is it necessary to discard the penalties on input?
+\item The trackability assumption is too strong. 
+\item The transfer learning result in section 3.2 is weak.
+\item Runtime issues (i.e. TGP vs. PILCO, transfer learning gain in runtime, GP runtime growing cubically with $N$) are not addressed. 
+\item TGP is not compared against state of the art RL algorithms (for trajectory tracking.)
+\item Sublinear regret bounds are not sufficient to illustrate (esp. to a control engineer) how TGP copes with various mismatches. The theoretical result for TGP resulting from this bound is weak (and not experimentally verifiable.)
+\item The difference from the usual RL setup is not emphasized (i.e. even if the regret is zero, the best action at each time step optimizes without considering the long-term effects of that choice.)
+\end{itemize}
+
+We organize these valid concerns into three groups and address them in detail in subsections below, in the order of decreasing importance and generality. \\
+
+\subsection{Weak results}
+
+\begin{enumerate}
+\item \emph{The theorem resulting from the analysis of the algorithm is weak.}
+
+%For a Gaussian Process sample $f(x)$ drawn from a covariance function $k(x,x') \leq 1$, we will look at $r_t = f(x_t) - f(x_{*})$ as a sequence of measures, or distributions. We need the following weak mode of convergence, adapted from \cite{Tao12}:
+%
+%\begin{defn}\label{tightness}
+%A sequence of random variables $r_t$ has a tight sequence of distributions if, for every $\epsilon > 0$, there exists a compact set $K \subset \mathbb{R}$ s.t. $\mathbb{P}(r_t \in K) \geq 1 - \epsilon$ for all sufficiently large $t$.
+%\end{defn}
+%
+%Our usage of $r_t$ as the notation for the sequence of random variables is justified: tightness holds for $r_t$.
+%\begin{prop}[Regret is tight]
+%The sequence of random variables known as regret has a tight sequence of distributions.
+%\end{prop}
+%\begin{proof}
+%For all $t$, the actual regret is bounded by the worst-case regret, i.e. $r_t \leq r_{max} = \max f(x) - \min f(x) := f(x^{*}) - f(x_{*})$. Since $f(x_{*})$ and $f(x^{*})$ both have an extreme-value distribution, using the cumulative distribution function of $f(x^{*}) - f(x_{*})$, we can calculate a $K(\epsilon)$ for each $\epsilon$ s.t. tightness holds [TODO: show this rigorously!].
+%\end{proof}
+%
+%We state the following corollary of \emph{Prokhorov's theorem} for Euclidean spaces:
+%\begin{thm}[Prokhorov's theorem]
+%If $r_t$ has a tight sequence of distributions, then there is a subsequence of $r_t$ which converges in distribution.
+%\end{thm}
+%Prokhorov's theorem can be seen as an extension of the classical \emph{Bolzano-Weierstrass} theorem for random variables. In case $r_t$ converges to 0, then the convergence is actually stronger \cite{Tao12}:
+%\begin{prop}
+%If $a \in \mathbb{R}$ is deterministic, then $r_t$ converges in probability to $a$ if and only if $r_t$ converges in distribution to $a$.
+%\end{prop}
+%But of course, this holds only for a subsequence of regret: $r_{t_k}$, $k \in \mathbb{N}$:
+%\begin{prop}
+%If the cumulative regret obeys a sublinear bound, then there exists a subsequence $r_{t_k}$ that converges in probability to 0.
+%\end{prop}
+%\begin{proof}
+%From Prokhorov's theorem we already know that a subsequence $r_{t_k}$ converges in probability. Using the same argument as in the TGP-theorem (i.e. using the sublinearity of cumulative regret) we can actually construct a deterministic subsequence converging to 0.
+%\end{proof}
+%
+%The theorem resulting from the analysis given in the paper takes a more definite form with this approach:
+%\begin{thm}[Weak theorem of TGP]
+%Let $s_t \in \Sigma$ be trackable for $t = 1, \ldots, N$. If $\lambda(c_t) \geq 0$ for some $\epsilon_{max} > 0$ around $\Sigma$ and the cumulative regret $R_T$ obeys a sublinear bound then there exists a subsequence of cost functionals $J_{\ell_{n}}$, $n \in \mathbb{N}$ that converges in probability to 0: $\forall \epsilon > 0, \ \exists \ell \in \mathbb{N} \ s.t. \ J_{\ell} \leq \epsilon$.
+%\end{thm}
+%In order to investigate the stronger version of this theorem, say \emph{the strong theorem for TGP} we need to look at the distribution of cumulative regret.
+
+\item \emph{The transfer learning result is weak.}
+
+\end{enumerate}
+
+\subsection{Generalizing to full-scale RL setup} 
+
+\begin{enumerate}
+\item \emph{Long term effects of greedy action} 
+
+\item \emph{Trackability assumption is too strong. Trajectory tracking vs. Point-tracking} 
+
+\item \emph{Penalties on input in the cost functional are not addressed.} 
+
+\item \emph{Stochasticity in the dynamics is not addressed.}
+\end{enumerate}
+
+\subsection{Experimental validation}
+
+\begin{enumerate}
+\item \emph{Comparisons to state of the art RL-algorithms}
+
+\item \emph{Runtime issues}
+
+\item \emph{Better experiments}
+\end{enumerate}
+
+%include references
+\bibliography{bibPlan}
+\bibliographystyle{plain}
+
+\end{document}

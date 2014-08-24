@@ -1,0 +1,34 @@
+\section{Background}\label{sec:bground}
+\subsection{Gaussian Processes}\label{GPIntro}
+We have used Gaussian Processes for cost function prediction and knowledge transfer between different contexts. A \textit{Gaussian Process} (GP) is a collection of dependent random variables, any finite number of which has a joint Gaussian distribution \cite{Rasmussen06}. 
+
+Gaussian processes, completely specified by a mean function $\mu(x)$ and a covariance function $k(x,x')$, can be seen as a prior distribution over the space of functions. For $y_i = f(x_i) + \epsilon_i$, $\epsilon_i \sim \mathcal{N}(0,\sigma_{n}^{2})$ with noisy observations $\observations_{N} = \{y_1,\ldots,y_N\}$ at sample points $X = \{x_1,\ldots,x_N\}$, the posterior over $f$ is again a Gaussian Process distribution with mean $\mu_N{(x)}$ and covariance $k_N(x,x')$ given by the following simple analytic equations:
+\begin{align}
+\mu_N{(x)} = \mu(x) + \mathbf{k}_N(x)^{\mathrm{T}}[\mathbf{K}_N + \sigma_{n}^{2}\mathbf{I}]^{-1}(\observations_N - \boldsymbol{\mu}_N) \label{gpUpdate_mu} \\ 
+k_N(x,x') = k(x,x') - \mathbf{k}_N(x)^{\mathrm{T}}[\mathbf{K}_N + \sigma_{n}^{2}\mathbf{I}]^{-1} \mathbf{k}_N(x') \label{gpUpdate_sigma}
+\end{align}
+where $\boldsymbol{\mu}_N = [\mu(x_1),\ldots,\mu(x_N)]^\mathrm{T}$ is the prior mean at the sample points, $\mathbf{k}_N(x) = [k(x_1,x),\ldots,k(x_N,x)]^\mathrm{T}$ is the vector of covariances between the sample points and the test point $x$ and $\mathbf{K}_N = [k(x,x')]_{x,x' \in X} \succeq 0.$
+
+The mean update equation \eqref{gpUpdate_mu} is a linear predictor because the resulting mean $\mu_N{(x)}$ is a linear combination of noisy observations $\observations_N$. In the covariance update equation \eqref{gpUpdate_sigma} the quantity $\mathbf{k}_N(x)^{\mathrm{T}}[\mathbf{K}_N + \sigma^{2}\mathbf{I}]^{-1} \mathbf{k}_N(x')$ corresponds to the \emph{information gain} from the noisy observations, i.e. reduction in uncertainty from the prior covariance $k(x,x')$.
+
+With these update equations, Gaussian processes can be used in nonparametric regression to predict the mean and variance of unknown test points. Nonparametric regression methods have the advantage of avoiding overfitting issues encountered typically in regression with finite basis functions. The prior models specified by the mean and variance functions are chosen among a discrete set of possible model structures  $\mathit{H_i}$ (including composites). Their \textit{hyperparameters} can be optimized using likelihood functions for training data. The likelihood function specifies the probability of the noisy training data $\observations$ given the sample points $X = \{x_1,\ldots,x_N\}$ and the latent function $f$, seen as a realization of a GP with corresponding hyperparameters. % realization or sample draw/ sampled from/ or just a sample
+
+%Gaussian Processes when used in estimation, have the advantage of capturing the entire distribution over future values of the function instead of merely their expectation \cite{Rasmussen04}, but unlike Kalman filters require $O(N^3)$ complexity due to the prohibitive matrix inversion in (\ref{gpUpdate_mu}) and (\ref{gpUpdate_sigma}). 
+%Several reduced-rank approximations are reported in the literature \cite{Rasmussen06} to overcome the problem of growing $N$ especially in big datasets.
+
+
+\subsection{Contextual Bandits}
+
+Multi-armed bandit problems is the basic setting in decision theory and reinforcement learning to optimally balance \textit{exploration} and \textit{exploitation}. In the context of stochastic function optimization, in order to find the global maximum of an unknown noisy function, it must be \textit{explored} by sampling at promising points and must be \textit{exploited} at the current maximum values. Using upper confidence bounds (UCB) is a particularly simple and intuitive heuristic to balance the exploration/exploitation trade off and works by keeping track of upper confidence bounds of the sample points \cite{Srinivas09}. When applied to dynamical systems, the sample points are the control signals and the function to be \emph{minimized} is the cost function. Although the cost function with respect to the system output is well defined, the cost corresponding to the control signal is not completely known due to modeling errors and unknown external disturbances. Therefore, multi-armed bandits can be used to track the global minimum of this cost function while providing a framework that can be extended for knowledge transfer.
+
+In addition to the controller input, contexts such as the current internal state of the system, the current environment state, and desired state can be parameterized in the cost function. 
+Learning over the joint space of inputs and contexts enables the knowledge transfer between different learning controllers with different contexts. 
+With the addition of context, bandit problems transform into a reinforcement learning problem \cite{Sutton98}. In reinforcement learning literature, tracking the global optimum is known as minimizing the cumulative regret $R_{T} = \Sigma_{t = 1}^{T}r_{t} $ or equivalently maximizing the cumulative reward (the negative of cumulative regret). Here $r_{t} := f(x_{t}) - f(x^{*})$ is the instantaneous regret where $x_t$ is the sample taken at time $t$, $x^{*} = \operatorname*{arg\,min}_{x \in \mathcal{D}}f(x)$ and $\mathcal{D}$ is the domain of $x$. 
+
+A desired feature of a (reinforcement) learning algorithm is to have sublinear regret because then the average regret $R_{T}/T$ after $T$ rounds remains bounded. 
+%Over time the sequence of actions taken converges to the optimal action, with convergence rate depending on the sublinearity. 
+Krause and Ong in \yrcite{Krause11} discuss such a learning algorithm, called CGP-UCB, which maintains a GP-estimate of the function to be optimized: 
+\begin{equation}
+\sysInput_{t} = \operatorname*{arg\,max}_{\sysInput \in U}\mu_{t-1}(\sysInput;\context_t) + \beta_{t}^{1/2}\sigma_{t-1}(\sysInput;\context_t) \label{ucb}
+\end{equation}
+where $\mu_{t-1}$ and $\sigma_{t-1}$ are the posterior mean and standard deviation of the GP over the joint input-context space $U \times C$, conditioned on the observations $(\sysInput_1,\context_1; y_1),\ldots,(\sysInput_{t-1},\context_{t-1}; y_{t-1})$ and $\beta_{t}$ is the confidence parameter scaling exploration vs. exploitation for the particular problem. Thus, when presented with context $\context_t$, this algorithm uses GP-inference in (\ref{gpUpdate_mu}) and (\ref{gpUpdate_sigma}) to predict the mean and variance for each possible action $\sysInput$, conditioned on all the past observations.

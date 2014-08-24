@@ -1,0 +1,53 @@
+% This file was created by matlab2tikz v0.4.4 running on MATLAB 8.0.
+% Copyright (c) 2008--2013, Nico Schlmer <nico.schloemer@gmail.com>
+% All rights reserved.
+% 
+% The latest updates can be retrieved from
+%   http://www.mathworks.com/matlabcentral/fileexchange/22022-matlab2tikz
+% where you can also make suggestions and rate matlab2tikz.
+% 
+\begin{tikzpicture}
+
+\begin{axis}[%
+width=0.85\columnwidth,
+height=0.670403225806452\columnwidth,
+area legend,
+scale only axis,
+xmin=0.5,
+xmax=3.5,
+xtick={1, 2, 3},
+xlabel={Trajectory Index},
+ymin=0,
+ymax=4,
+ylabel={SSE - Episode 1},
+legend style={at={(0.03,0.97)},anchor=north west,draw=black,fill=white,legend cell align=left}
+]
+\addplot[ybar,bar width=0.0503703703703704\columnwidth,bar shift=-0.062962962962963\columnwidth,draw=black,fill=white] plot coordinates{(1,0.534257)
+(2,2.211294)
+(3,2.305692)};
+
+\addlegendentry{ILC};
+
+\addplot [
+color=black,
+solid,
+forget plot
+]
+table[row sep=crcr]{
+0.5 0\\
+3.5 0\\
+};
+\addplot[ybar,bar width=0.0503703703703704\columnwidth,draw=black,fill=lightgray] plot coordinates{(1,2.552392)
+(2,3.56266)
+(3,3.837903)};
+
+\addlegendentry{TGP};
+
+\addplot[ybar,bar width=0.0503703703703704\columnwidth,bar shift=0.0629629629629629\columnwidth,draw=black,fill=gray] plot coordinates{(1,0.222369)
+(2,1.007975)
+(3,0.543684)};
+
+\addlegendentry{TGP-with transfer};
+
+\end{axis}
+\end{tikzpicture}%

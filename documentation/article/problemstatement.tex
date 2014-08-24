@@ -1,0 +1,84 @@
+\section{Problem Statement and Background}\label{sec:bground}
+
+Consider the following discrete dynamics:
+\begin{equation}
+\state_{t+1} = \dynamics(\state_t,\sysInput_t), \quad  t = 0,1, \ldots, N,
+\label{eq:readDynamics}
+\end{equation}
+where $\dynamics$ is Lipschitz continuous in both arguments, $\state_t \in \mathcal{X} \subset \mathbb{R}^n$ is the state of the system at time stage $t$  and $\sysInput_t \in \mathcal{U} \subset \mathbb{R}^m$ is the control input.  
+
+In discrete time trajectory tracking, the control objective is to minimize the cost functional
+\begin{equation}
+\ValueFunction(\policy) = \sum_{t=1}^{N} d(\state_{t}, \traj_{t}) \label{costDiscrete}
+\end{equation}
+where the desired states $\traj_{t}$ belong to a given trajectory $\Traj = \{\traj_0, \traj_1, \ldots, \traj_N\}$ at each time stage, $\policy = \{\sysInput_0, \ldots, \sysInput_{N-1}\}$, and $d(\state_{t}, \traj_{t})$ is a suitably chosen semimetric, e.g. squared Euclidean distance. Note that this minimization should be done considering the state and input constraints and should satisfy \eqref{eq:readDynamics}. In general minimizing \eqref{costDiscrete} is impractical and in Model Predictive Control (MPC), a very popular technique in control theory, the objective to minimize is instead $\sum_{t=1}^{M} d(\state_{t}, \traj_{t})$~\footnote{We discard here the penalties on the inputs $\sysInput_t$.} with $M$ typically much less than $N$, i.e. $M \ll N$.
+
+% receding horizon approaches?
+However such receding horizon approaches may perform badly or suffer from instability when the dynamics $\dynamics$ is not known very well. More precisely, consider the following dynamics typically derived from first principles:
+\begin{equation}
+\hat{\state}_{t+1} = \dynamicsNominal(\state_t,\sysInput_t), \quad  t = 0,1, \ldots, N,
+\label{nominal_model}
+\end{equation}
+where $\dynamicsNominal$ is again Lipschitz continuous in both arguments. This \emph{nominal} model may not be quite accurate when there are unmodelled dynamical effects or repeating disturbances not taken into consideration: \eqref{nominal_model} can fail to predict the future states. The foremost aim of this work is to develop a framework that can learn these unmodelled dynamical effects efficiently. To do this we learn to track at each time stage $t$ the (global) minimum of an unknown scalar cost function $\cost_{t} = d(\state_{t},\traj_{t})$. 
+
+The unknown cost function $\cost_{t} = d(\state_{t},\traj_{t})$ at each time stage $t \geq 1$ depends on the previous state $\state_{t-1}$ and the desired state $\traj_{t}$ as the \emph{context}, the previously applied input $\sysInput_{t-1}$ as the \emph{action}. The contexts $\context_t = (\state_{t}, \traj_{t+1})$ for $t \geq 0$ in a more general setting can be imagined as revealed by an adversary from  $\mathcal{C} = \mathcal{X}^{2}$, i.e. environmental variables independent of the input $\sysInput_t$ to be applied. For brevity we sometimes use the notation $\ctxaction = (\sysInput;\context)$ for the variables in the joint input-context space $\mathcal{D} = \mathcal{U} \times \mathcal{C}$.
+
+\paragraph*{Regret.} A natural performance metric for an algorithm tracking the (global) minimum of a function $\cost(\sysInput;\context)$ is the cumulative regret $R_{T} = \Sigma_{t = 1}^{T}r_{t} $ or equivalently the cumulative reward (the negative of cumulative regret). Here $r_{t} = \cost(\sysInput_{t};\context_{t}) - \cost^{*}$ is the instantaneous regret where $\sysInput_t$ is the action taken at time $t$, $\cost^{*} = \min_{\sysInput \in \mathcal{U}}\cost(\sysInput;\context_t)$.
+
+A desired feature of such an algorithm is to have asymptotically \emph{no-regret}: $\lim_{T \to \infty}R_{T}/T = 0$ because then a subsequence of actions taken converge to the optimal action. Furthermore, any bounds on the average regret $R_{T}/T$ after $T$ rounds imply a convergence rate for this subsequence since the minimum $\min_{t \leq T}\cost(\sysInput_t;\context_t)$ is sandwiched between $\cost^{*}$ and the average. 
+
+\paragraph*{Gaussian Processes and RKHS.} In order to guarantee no-regret, it is necessary to impose some sort of smoothness assumptions on the function $\cost(\sysInput;\context)$. We can implicitly enforce smoothness on the function by assuming that $\cost(\sysInput;\context)$ has low \emph{complexity} as measured under an RKHS norm. \emph{Reproducing kernel Hilbert spaces} \cite{Wahba90} are intimately tied to GPs and their covariance functions $k(\ctxaction,\ctxaction')$. A \textit{Gaussian Process} (GP) is a collection of dependent random variables, any finite number of which has a joint Gaussian distribution \cite{Rasmussen06}. 
+
+%We have used Gaussian Processes for cost function prediction and knowledge transfer between different contexts. 
+Gaussian processes, completely specified by a mean function $\mu(\ctxaction)$ and a covariance function $k(\ctxaction,\ctxaction')$, can be seen as a prior distribution over the space of functions. For $y_i = \cost(\ctxaction_i) + \epsilon_i$, $\epsilon_i \sim \mathcal{N}(0,\sigma_{n}^{2})$ with noisy observations $\observations_{T} = \{y_1,\ldots,y_T\}$ at sample points $Z_{T} = \{\ctxaction_1,\ldots,\ctxaction_T\}$, the posterior over $\cost(\ctxaction)$ is again a Gaussian Process distribution with mean $\mu_T{(\ctxaction)}$ and covariance $k_T(\ctxaction,\ctxaction')$ given by the following simple analytic equations:
+\begin{align}
+\mu_T{(\ctxaction_{*})} &= \mu(\ctxaction_{*}) + \mathbf{k}_T(\ctxaction_{*})^{\mathrm{T}}[\mathbf{K}_T + \sigma_{n}^{2}\mathbf{I}]^{-1}(\observations_T - \boldsymbol{\mu}_T) \label{gpUpdate_mu} \\ 
+k_T(\ctxaction_{*},\ctxaction'_{*}) &= k(\ctxaction_{*},\ctxaction'_{*}) - \mathbf{k}_T(\ctxaction_{*})^{\mathrm{T}}[\mathbf{K}_T + \sigma_{n}^{2}\mathbf{I}]^{-1} \mathbf{k}_T(\ctxaction'_{*}) \label{gpUpdate_covar} \\
+\sigma_T^{2}(\ctxaction_{*}) &= k_T(\ctxaction_{*},\ctxaction_{*}) \label{gpUpdate_sigma}
+\end{align}
+where $\boldsymbol{\mu}_T = [\mu(\ctxaction_1),\ldots,\mu(\ctxaction_T)]^\mathrm{T}$ is the prior mean at the sample points, $\mathbf{k}_T(\ctxaction_{*}) = [k(\ctxaction_1,\ctxaction_{*}),\ldots,k(\ctxaction_T,\ctxaction_{*})]^\mathrm{T}$ is the vector of covariances between the sample points and the test point $\ctxaction_{*}$ and $\mathbf{K}_T = [k(\ctxaction,\ctxaction')]_{\ctxaction,\ctxaction' \in Z_T} \succeq 0.$
+
+%The mean update equation \eqref{gpUpdate_mu} is a linear predictor because the resulting mean $\mu_N{(x)}$ is a linear combination of noisy observations $\observations_N$. In the covariance update equation \eqref{gpUpdate_sigma} the quantity $\mathbf{k}_N(x)^{\mathrm{T}}[\mathbf{K}_N + \sigma^{2}\mathbf{I}]^{-1} \mathbf{k}_N(x')$ corresponds to the \emph{information gain} from the noisy observations, i.e. reduction in uncertainty from the prior covariance $k(x,x')$.
+
+With these update equations, Gaussian processes can be used in nonparametric regression to predict the mean and variance of unknown test points. Nonparametric regression methods have the advantage of avoiding rigidity
+%overfitting issues 
+encountered typically in regression with finite basis functions. 
+%The prior models specified by the mean and variance functions are chosen among a discrete set of possible model structures  $\mathit{H_i}$ (including composites). Their \textit{hyperparameters} can be optimized using likelihood functions for training data. The likelihood function specifies the probability of the noisy training data $\observations$ given the sample points $X = \{x_1,\ldots,x_N\}$ and the latent function $f$, seen as a realization of a GP with corresponding hyperparameters. 
+
+%Gaussian Processes when used in estimation, have the advantage of capturing the entire distribution over future values of the function instead of merely their expectation \cite{Rasmussen04}, but unlike Kalman filters require $O(N^3)$ complexity due to the prohibitive matrix inversion in (\ref{gpUpdate_mu}) and (\ref{gpUpdate_sigma}). 
+%Several reduced-rank approximations are reported in the literature \cite{Rasmussen06} to overcome the problem of growing $N$ especially in big datasets.
+
+The RKHS $\mathcal{H}_{k}(\mathcal{D})$ corresponding to the GP covariance function $k(\ctxaction,\ctxaction')$ is a complete subspace of $L_{2}(\mathcal{D})$ with an inner product $\langle \cdot,\cdot \rangle_{k}$ obeying the reproducing property: $\langle \cost(\cdot), k(\ctxaction,\cdot) \rangle_{k} = \cost(\ctxaction)$ for all $\cost(\sysInput;\context) \in \mathcal{H}_{k}(\mathcal{D})$. The induced RKHS norm $\|\cost(\sysInput;\context)\|_{k} < \infty$ measures the smoothness of $\cost(\sysInput;\context)$. %The functions $\cost(\sysInput;\context)$ drawn from a GP, i.e. $\cost(\ctxaction) \sim GP(0,k(\ctxaction,\ctxaction'))$ are \emph{almost surely} outside this space of smooth functions \cite{Wahba90} but the linear predictor \eqref{gpUpdate_mu}, being their expectation at time $T$, always falls inside $\mathcal{H}_{k}(\mathcal{D})$.
+
+\paragraph*{Bandits.} In the general reinforcement learning problem, contexts depend on the actions taken. In particular, in trajectory tracking, next states are determined by the previously applied input sequence. A simpler setting where the actions do not influence the contexts is known as \emph{multi-armed bandits}, where in order to find the global minimum of an unknown noisy function, it must be \textit{explored} by sampling at promising points $\sysInput$ and must be \textit{exploited} at the current minimum values. Using upper confidence bounds (UCB) is a particularly simple and intuitive heuristic to balance the exploration/exploitation tradeoff and works by keeping track of upper confidence bounds of the sample points \cite{Srinivas09}. 
+%When applied to dynamical systems, the sample points are the control signals and the function to be \emph{minimized} is the cost function. 
+%Although the cost function with respect to the system output is well defined, the cost corresponding to the control signal is not completely known due to modeling errors and unknown external disturbances. Therefore, multi-armed bandits can be used to track the global minimum of this cost function while providing a framework that can be extended for knowledge transfer.
+
+%In addition to the controller input, \emph{contexts} such as the current internal state of the system, the current environment state, and desired state can be parameterized in the cost function. 
+%Learning over the joint space of inputs and contexts enables the knowledge transfer between 
+%different learning controllers with 
+%different contexts. 
+%With the addition of context, bandit problems transform into a reinforcement learning problem \cite{Sutton98}. 
+
+Krause and Ong in \yrcite{Krause11} discuss such a learning algorithm which maintains a GP-estimate of the function to be optimized with \eqref{UCB}:
+
+\begin{equation}
+\sysInput_{t} = \operatorname*{arg\,min}_{u \in U} \big(\mu_{t-1}(\sysInput;\context) - \beta_t^{1/2}\sigma_{t-1}(\sysInput;\context) \big)
+\label{UCB}
+\end{equation}
+where $\beta_t$ is the parameter that balances exploration-exploitation at each time stage $t$. They show that the performance of this algorithm can be linked to the \emph{maximal information gain} for the particular cost function to be learned:
+
+\begin{align}
+\gamma_{T}  &= \max_{A \subset \mathcal{D}: |A| = T} \mathcal{I}(\observations_{A};\cost) \\
+&= \max_{A \subset \mathcal{D}: |A| = T} H(\observations_{A}) - H(\observations_{A}|\cost)
+\end{align}
+
+where $\mathcal{I}(\observations_{A};\cost)$ is the \emph{information gain due to sampling} $A$. For a Gaussian, the entropy $H(\mathcal{N}(\boldsymbol{\mu},\mathbf{K})) = \frac{1}{2}\log|2\pi e \mathbf{K}|$ using which we get: $\gamma_T = \frac{1}{2}\log|\mathbf{I} + \sigma_n^{-2}\mathbf{K}_{A}|$.
+
+The cumulative regret of \eqref{UCB} can be bounded if $\cost(\sysInput; \context) \in \mathcal{H}_k(\mathcal{D})$, i.e. $\|\cost(\sysInput; \context)\|_{k}^{2} \leq B$ for some $B < \infty$, where the kernel generating the RKHS is any valid combination of linear or squared exponential~\footnote{Mat\'{e}rn kernels with $\nu > 1$ can also be considered.} covariance function $k(\ctxaction,\ctxaction')$. The valid combinations of kernels are summarized in \cite{Bishop07}. In particular, tensor products and sums of linear and squared exponential kernels are allowed in our case. The bound on the cumulative regret is as follows:
+\begin{align}
+R_T = \sum_{t=1}^{T}\cost(\sysInput_{t}; \context_{t}) - \cost^{*} \leq \sqrt{\kappa T \beta_{T} \gamma_{T}} \label{cum-regret}
+\end{align}
+with high probability $p \geq 1- \delta$. Here $\kappa = 8/\log(1 + \sigma_b^{-2})$ with $\sigma_b$ a uniform bound on the noise. Note that unlike in the Bayesian update equations \eqref{gpUpdate_mu} -- \eqref{gpUpdate_sigma}, \cite{Krause11} makes distribution-free assumptions on the noise variables $\varepsilon_t$ if $\cost(\sysInput; \context) \in \mathcal{H}_k(\mathcal{D})$: they can be an arbitrary martingale difference sequence ($\mathbb{E}[\varepsilon_t|\boldmath{\varepsilon_{<t}}] = 0$ for all $t \in \mathbb{N}$) uniformly bounded by $\sigma_b$. 
+
+The exploration-exploitation parameter $\beta_T = 2B + 300\gamma_{T}\log^{3}(T/\delta)$ depends on $\gamma_T$, the free parameter $\delta$ and the bound $B$. The intuition behind these dependencies is that as the cost function $\cost(\sysInput;\context)$ starts to vary more often with respect to the actions $\sysInput$ or the contexts $\context$, the RKHS-bound penalizing this function will increase. $\beta_T$ will increase and \eqref{UCB} will end up exploring $\mathcal{U}$ more frequently to track the global minimum of this cost function. We will be more \emph{sure} of finding the global minimum if we decrease $\delta$: this will likewise correspond to an increasing exploration rate as $\beta_T$ increases.

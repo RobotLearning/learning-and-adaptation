@@ -1,0 +1,647 @@
+
+% This LaTeX was auto-generated from an M-file by MATLAB.
+% To make changes, update the M-file and republish this document.
+
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{color}
+
+\sloppy
+\definecolor{lightgray}{gray}{0.5}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+    
+    
+\subsection*{Contents}
+
+\begin{itemize}
+\setlength{\itemsep}{-1ex}
+   \item Maximum Likelihood Estimation of Hyperparameters
+   \item Sampling Based Optimization \& Derivative Based Optimization
+   \item Adding Nonzero Mean
+   \item Repeat in R2
+   \item Including Mean in R2 case
+\end{itemize}
+
+
+\subsection*{Maximum Likelihood Estimation of Hyperparameters}
+
+\begin{par}
+Loads datasets generated using generation.m and then performs MLE on the data to estimate parameters (covariance with/without mean parameters). Using Rasmussen's toolbox for gp and minimize functions.
+\end{par} \vspace{1em}
+\begin{par}
+Author: Okan Koc, IDSC, ETH Zurich
+\end{par} \vspace{1em}
+\begin{par}
+TODO: add REML
+\end{par} \vspace{1em}
+\begin{verbatim}
+%--------------------------------------------------------------------------
+
+
+clc; clear; close all; diary('estimationResults.txt');
+
+% define model structure
+% mean not included
+meanfunc = []; hyp.mean = [];
+% covariance function hyperparameters: length ell and scale sf
+covfunc = {@covSEiso};
+% noise included
+likfunc = @likGauss;
+
+% load datasets
+load('estimation1D.txt');
+load('hp.mat'); % exact parameter values
+x = estimation1D(:,1);
+% zero-mean values
+y = estimation1D(:,2:6);
+% mean values added
+y2 = estimation1D(:,7:11);
+% initial value for parameters
+p0 = 1;
+% initialize variables and structs
+GPSTR.covfunc = covfunc;
+GPSTR.likfunc = likfunc;
+GPSTR.inf = @infExact;
+GPSTR.meanfunc = meanfunc;
+GPSTR.hyp = hyp;
+ell1s = linspace(0.05,1,20);
+ell2s = linspace(0.05,1,20);
+sfs = linspace(0.4,1.2,9);
+sns = linspace(0.1,0.5,5);
+beta0s = linspace(-0.2,1,13);
+beta1s = linspace(-0.1,1.5,17);
+beta2s = linspace(-1.0,1.3,24);
+nll3 = zeros(length(ell1s),length(sfs),length(sns));
+% number of line searches for minimization
+Ncg = 1000;
+\end{verbatim}
+
+
+\subsection*{Sampling Based Optimization \& Derivative Based Optimization}
+
+\begin{verbatim}
+disp('Results for zero mean 1D');
+disp('Covariance parameters maximizing the log likelihood:');
+
+for k = 1:size(y,2)
+    % To find optimal parameters
+    % negative log likelihoods of different models
+    fprintf('Dataset %d : \n', k);
+    disp('Sampling based optimization:');
+
+    % Using DIRECT
+    % Send options to Direct
+    options.showits   = 0;
+    options.tol       = 0.05;
+    options.maxevals  = 500;
+    options.maxits    = 250;
+    options.maxdeep   = 100;
+    % Pass function as part of a Matlab Structure
+
+    lb = [ell1s(1); sfs(1); sns(1)];
+    ub = [ell1s(end); sfs(end); sns(end)];
+    bounds = [lb, ub];
+    problem.f = @(hyp) gps(GPSTR, x, y(:,k), hyp);
+    [~,hpm,hist] = Direct(problem,bounds,options);
+    fprintf('ell = %f, sf = %f, sn = %f \n', hpm(1), hpm(2), hpm(3));
+
+    %{
+    %plot the hyperparameter surface
+    figure;
+    surf(sfs,ells,-nlls);
+    title('Log likelihood of the data under different parameters');
+    xlabel('sf parameter values');
+    ylabel('ell parameter values');
+    %}
+    % Derivative Based Optimization
+    % run conjugate gradient method to find best set of parameters
+
+    %function handle gp is used in training mode
+    %training: [nlZ dnlZ] = gp(hyp, inf, mean, cov, lik, x, y)
+    %nlZ: negative log probability of the training data
+    %dnlZ: derivative of above
+
+    disp('MLE: Derivative based optimization...');
+    fprintf('Starting from values ell1_0 = %f, sf0 = %f, sn0 = %f \n', ...
+         p0, p0, p0);
+    hyp.cov = log([p0; p0]);
+    hyp.lik = log(p0);
+    hyp = minimin(hyp, @gp, -Ncg, false, @infExact, meanfunc, covfunc, ...
+                   likfunc, x, y(:,k));
+    %inferred values
+    fprintf('ell = %f, sf = %f, sn = %f \n', ...
+             exp(hyp.cov(1)), exp(hyp.cov(2)), exp(hyp.lik));
+    fprintf('True values: ell = %f, sf = %f, sn = %f \n', ...
+             hp(k,1), hp(k,2), hp(k,3));
+end
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}Results for zero mean 1D
+Covariance parameters maximizing the log likelihood:
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.138253, sf = 0.400061, sn = 0.100030 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.105065, sf = 0.198473, sn = 0.092682 
+True values: ell = 0.150000, sf = 0.500000, sn = 0.100000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.304767, sf = 0.858162, sn = 0.201235 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.304780, sf = 0.856433, sn = 0.201181 
+True values: ell = 0.250000, sf = 0.800000, sn = 0.200000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.107990, sf = 1.199451, sn = 0.296159 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.109223, sf = 1.257364, sn = 0.296226 
+True values: ell = 0.100000, sf = 1.000000, sn = 0.300000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.438413, sf = 0.400061, sn = 0.100030 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.335673, sf = 0.188820, sn = 0.092188 
+True values: ell = 0.300000, sf = 0.500000, sn = 0.100000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.135791, sf = 0.745862, sn = 0.178372 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell = 0.135355, sf = 0.739435, sn = 0.178378 
+True values: ell = 0.150000, sf = 1.200000, sn = 0.200000 
+\end{verbatim} \color{black}
+    
+
+\subsection*{Adding Nonzero Mean}
+
+\begin{par}
+complicates things!
+\end{par} \vspace{1em}
+\begin{verbatim}
+ml = {@meanLinear};
+mc = {@meanConst};
+meanfunc2 = {'meanSum',{mc,ml}};
+GPSTR.meanfunc = meanfunc2;
+
+fprintf('\n');
+disp('Results for 1D linear mean MLE:');
+for k = 1:size(y2,2)
+    % To find optimal parameters
+    % negative log likelihoods of different models
+    fprintf('Dataset %d : \n', k);
+    disp('Sampling based optimization:');
+
+    % Using DIRECT
+    % Send options to Direct
+    options.showits   = 0;
+    options.tol       = 0.05;
+    options.maxevals  = 2000;
+    options.maxits    = 1000;
+    options.maxdeep   = 100;
+    % Pass function as part of a Matlab Structure
+
+    lb = [ell1s(1); sfs(1); sns(1); beta0s(1); beta1s(1)];
+    ub = [ell1s(end); sfs(end); sns(end); beta0s(end); beta1s(end)];
+    bounds = [lb, ub];
+    problem.f = @(hyp) gps(GPSTR, x, y2(:,k), hyp);
+    [~,hpm,hist] = Direct(problem,bounds,options);
+    fprintf('ell = %f, sf = %f, sn = %f \n', hpm(1), hpm(2), hpm(3));
+    fprintf('mean slope = %f, intercept = %f \n', ...
+             hpm(4), hpm(5));
+
+    % Derivative Based Optimization
+    % run conjugate gradient method to find best set of parameters
+    disp('MLE: Derivative based optimization...');
+    fprintf('Starting from values ell1_0 = %f, sf0 = %f, sn0 = %f \n', ...
+         p0, p0, p0);
+    fprintf('beta0 = %f, beta1 = %f \n', p0, p0);
+    hyp.cov = log([p0; p0]);
+    hyp.lik = log(p0);
+    hyp.mean = [p0; p0];
+    hyp = minimin(hyp, @gp, -Ncg, false, @infExact, meanfunc2, covfunc, ...
+                   likfunc, x, y2(:,k));
+    %inferred values
+    fprintf('ell = %f, sf = %f, sn = %f \n', ...
+             exp(hyp.cov(1)), exp(hyp.cov(2)), exp(hyp.lik));
+    fprintf('mean slope = %f, intercept = %f \n', ...
+             hyp.mean(2), hyp.mean(1));
+
+    % REML !!!
+    disp('REML...');
+    fprintf('Starting from values ell1_0 = %f, sf0 = %f, sn0 = %f \n', ...
+         p0, p0, p0);
+    fprintf('beta0 = %f, beta1 = %f \n', p0, p0);
+    hyp.cov = log([p0; p0]);
+    hyp.lik = log(p0);
+    hyp.mean = [p0; p0];
+    [hyp,bhat] = reml(hyp, covfunc, likfunc, x, y2(:,k));
+    %inferred values
+    fprintf('ell = %f, sf = %f, sn = %f \n', ...
+             exp(hyp.cov(1)), exp(hyp.cov(2)), exp(hyp.lik));
+    fprintf('mean slope = %f, intercept = %f \n', ...
+             bhat(2), bhat(1));
+    fprintf('True values: ell = %f, sf = %f, sn = %f \n', ...
+             hp(k,1), hp(k,2), hp(k,3));
+    fprintf('mean slope = %f, intercept = %f \n', ...
+             hp(k,5), hp(k,4));
+
+end
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}
+Results for 1D linear mean MLE:
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.138397, sf = 0.400061, sn = 0.100030 
+mean slope = 0.999909, intercept = 0.433455 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.105280, sf = 0.198016, sn = 0.092627 
+mean slope = 0.414783, intercept = 1.027847 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 4 iterations. 
+ell = 0.895614, sf = 1.101416, sn = 0.175052 
+mean slope = 0.899205, intercept = 1.401514 
+True values: ell = 0.150000, sf = 0.500000, sn = 0.100000 
+mean slope = 0.500000, intercept = 1.000000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.236134, sf = 0.563329, sn = 0.200137 
+mean slope = 0.007682, intercept = 1.499634 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.216469, sf = 0.520327, sn = 0.199604 
+mean slope = 1.827645, intercept = -0.150021 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 5 iterations. 
+ell = 0.308984, sf = 0.981860, sn = 0.202874 
+mean slope = 1.225961, intercept = 0.123391 
+True values: ell = 0.250000, sf = 0.800000, sn = 0.200000 
+mean slope = 0.200000, intercept = 0.400000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.106687, sf = 1.198354, sn = 0.295062 
+mean slope = 0.439506, intercept = 0.792181 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.106692, sf = 1.221336, sn = 0.295354 
+mean slope = 0.720620, intercept = 0.473785 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 5 iterations. 
+ell = 0.111896, sf = 1.375949, sn = 0.297605 
+mean slope = 0.620342, intercept = 0.510278 
+True values: ell = 0.100000, sf = 1.000000, sn = 0.300000 
+mean slope = 0.100000, intercept = 0.600000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.439716, sf = 0.400061, sn = 0.100030 
+mean slope = 0.818656, intercept = 1.026048 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.164706, sf = 0.068621, sn = 0.093704 
+mean slope = 0.537315, intercept = 1.111078 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 4 iterations. 
+ell = 0.579034, sf = 0.817620, sn = 0.093716 
+mean slope = 1.461668, intercept = 0.564679 
+True values: ell = 0.300000, sf = 0.500000, sn = 0.100000 
+mean slope = 1.000000, intercept = 0.800000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell = 0.128406, sf = 0.666850, sn = 0.177641 
+mean slope = -0.199726, intercept = 1.439643 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+ell = 0.113219, sf = 0.517123, sn = 0.176096 
+mean slope = 2.050731, intercept = -0.647697 
+REML...
+Starting from values ell1_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000 
+REML converged in 4 iterations. 
+ell = 0.130622, sf = 0.722367, sn = 0.177846 
+mean slope = 2.109795, intercept = -0.687738 
+True values: ell = 0.150000, sf = 1.200000, sn = 0.200000 
+mean slope = 1.500000, intercept = 0.200000 
+\end{verbatim} \color{black}
+    
+
+\subsection*{Repeat in R2}
+
+\begin{verbatim}
+% define model structure
+% mean not included
+meanfunc = [];
+GPSTR.meanfunc = meanfunc;
+hyp.mean = [];
+% covariance function hyperparameters: length ell and scale sf
+covfunc = {@covSEard};
+GPSTR.covfunc = covfunc;
+
+% load datasets
+load('estimation2D.txt');
+load('hp2.mat'); % exact parameter values
+X = estimation2D(:,1:2);
+% zero-mean values0
+y = estimation2D(:,3:7);
+% mean values added
+y2 = estimation2D(:,8:12);
+
+fprintf('\n');
+disp('Results for zero mean 2D');
+disp('Covariance parameters maximizing the log likelihood:');
+
+for k = 1:size(y,2)
+    % To find optimal parameters
+    % negative log likelihoods of different models
+    fprintf('Dataset %d : \n', k);
+    disp('Sampling based optimization:');
+
+    % Using DIRECT
+    % Send options to Direct
+    options.showits   = 0;
+    options.tol       = 0.05;
+    options.maxevals  = 1000;
+    options.maxits    = 500;
+    options.maxdeep   = 100;
+    % Pass function as part of a Matlab Structure
+
+    lb = [ell1s(1); ell2s(1); sfs(1); sns(1)];
+    ub = [ell1s(end); ell2s(end); sfs(end); sns(end)];
+    bounds = [lb, ub];
+    problem.f = @(hyp) gps(GPSTR, X, y(:,k), hyp);
+    [~,hpm,hist] = Direct(problem,bounds,options);
+    fprintf('ell1 = %f, ell2 = %f, sf = %f, sn = %f \n', ...
+             hpm(1), hpm(2), hpm(3), hpm(4));
+
+    % Derivative Based Optimization
+    % run conjugate gradient method to find best set of parameters
+    disp('MLE: Derivative based optimization...');
+    fprintf('Starting from values ell1_0 = %f, ell2_0 = %f, sf0 = %f, sn0 = %f \n', ...
+         p0, p0, p0, p0);
+    hyp.cov = log([p0; p0; p0]);
+    hyp.lik = log(p0);
+    hyp = minimin(hyp, @gp, -Ncg, false, @infExact, meanfunc, covfunc, ...
+                   likfunc, X, y(:,k));
+    %inferred values
+    fprintf('ell1 = %f, ell2 = %f, sf = %f, sn = %f \n', ...
+             exp(hyp.cov(1)), exp(hyp.cov(2)), exp(hyp.cov(3)), ...
+             exp(hyp.lik));
+    fprintf('True values: ell1 = %f, ell2 = %f, sf = %f, sn = %f \n', ...
+             hp2(k,1), hp2(k,2), hp2(k,3), hp2(k,4));
+end
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}
+Results for zero mean 2D
+Covariance parameters maximizing the log likelihood:
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.173148, ell2 = 0.794753, sf = 0.681481, sn = 0.102469 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.147529, ell2 = 0.621114, sf = 0.539554, sn = 0.096381 
+True values: ell1 = 0.150000, ell2 = 0.500000, sf = 0.500000, sn = 0.100000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.277401, ell2 = 0.307373, sf = 0.402743, sn = 0.180384 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.276928, ell2 = 0.307414, sf = 0.402037, sn = 0.180244 
+True values: ell1 = 0.250000, ell2 = 0.350000, sf = 0.400000, sn = 0.200000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.067593, ell2 = 0.841667, sf = 0.859259, sn = 0.285185 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.007577, ell2 = 0.757384, sf = 0.779213, sn = 0.289089 
+True values: ell1 = 0.100000, ell2 = 0.800000, sf = 1.000000, sn = 0.300000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.313889, ell2 = 0.161420, sf = 0.582716, sn = 0.102469 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.297783, ell2 = 0.157240, sf = 0.536357, sn = 0.100702 
+True values: ell1 = 0.300000, ell2 = 0.150000, sf = 0.500000, sn = 0.100000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.153601, ell2 = 0.196605, sf = 1.109465, sn = 0.100823 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+ell1 = 0.158753, ell2 = 0.203085, sf = 1.263923, sn = 0.096094 
+True values: ell1 = 0.150000, ell2 = 0.200000, sf = 1.200000, sn = 0.100000 
+\end{verbatim} \color{black}
+    
+
+\subsection*{Including Mean in R2 case}
+
+\begin{par}
+linear mean with intercept included
+\end{par} \vspace{1em}
+\begin{verbatim}
+meanfunc2 = {@meanSum, {@meanConst, @meanLinear}};
+GPSTR.meanfunc = meanfunc2;
+
+fprintf('\n');
+disp('Results for linear mean 2D MLE');
+for k = 1:size(y2,2)
+    % To find optimal parameters
+    % negative log likelihoods of different models
+    fprintf('Dataset %d : \n', k);
+    disp('Sampling based optimization:');
+
+    % Using DIRECT
+    % Send options to Direct
+    options.showits   = 0;
+    options.tol       = 0.05;
+    options.maxevals  = 8000;
+    options.maxits    = 4000;
+    options.maxdeep   = 100;
+    % Pass function as part of a Matlab Structure
+
+    lb = [ell1s(1); ell2s(1); sfs(1); sns(1); ...
+          beta0s(1); beta1s(1); beta2s(1)];
+    ub = [ell1s(end); ell2s(1); sfs(end); sns(end);
+          beta0s(end); beta1s(end); beta2s(1)];
+    bounds = [lb, ub];
+    problem.f = @(hyp) gps(GPSTR, X, y2(:,k), hyp);
+    [~,hpm,hist] = Direct(problem,bounds,options);
+    fprintf('ell1 = %f, ell2 = %f, sf = %f, sn = %f \n', ...
+             hpm(1), hpm(2), hpm(3), hpm(4));
+    fprintf('mean slope1 = %f, slope2 = %f, intercept = %f \n', ...
+             hpm(6), hpm(7), hpm(5));
+
+    % MLE: Derivative Based Optimization
+    % run conjugate gradient method to find best set of parameters
+    disp('MLE: Derivative based optimization...');
+    fprintf('Starting from values ell1_0 = %f, ell2_0 = %f, sf0 = %f, sn0 = %f \n', ...
+         p0, p0, p0, p0);
+    fprintf('beta0 = %f, beta1 = %f, beta2 = %f \n', ...
+         p0, p0, p0);
+    hyp.cov = log([p0; p0; p0]);
+    hyp.lik = log(p0);
+    hyp.mean = [p0; p0; p0];
+    hyp = minimin(hyp, @gp, -Ncg, false, @infExact, meanfunc2, covfunc, ...
+                   likfunc, X, y2(:,k));
+    %inferred values
+    fprintf('ell1 = %f, ell2 = %f, sf = %f, sn = %f \n', ...
+             exp(hyp.cov(1)), exp(hyp.cov(2)), exp(hyp.cov(3)), ...
+             exp(hyp.lik));
+    fprintf('mean slope1 = %f, slope2 = %f, intercept = %f \n', ...
+             hyp.mean(2), hyp.mean(3), hyp.mean(1));
+
+    % REML !!!
+    disp('REML...');
+    fprintf('Starting from values ell1_0 = %f, ell2_0 = %f, sf0 = %f, sn0 = %f \n', ...
+         p0, p0, p0, p0);
+    fprintf('beta0 = %f, beta1 = %f, beta2 = %f \n', p0, p0, p0);
+    hyp.cov = log([p0; p0; p0]);
+    hyp.lik = log(p0);
+    hyp.mean = [p0; p0; p0];
+    [hyp,bhat] = reml(hyp, covfunc, likfunc, X, y2(:,k));
+    %inferred values
+    fprintf('ell1 = %f, ell2 = %f, sf = %f, sn = %f \n', ...
+             exp(hyp.cov(1)), exp(hyp.cov(2)), exp(hyp.cov(3)), exp(hyp.lik));
+    fprintf('mean slope1 = %f, slope2 = %f, intercept = %f \n', ...
+             bhat(2), bhat(3), bhat(1));
+    fprintf('True values: ell1 = %f, ell2 = %f, sf = %f, sn = %f \n', ...
+             hp2(k,1), hp2(k,2), hp2(k,3), hp2(k,4));
+    fprintf('mean slope1 = %f, slope2 = %f, intercept = %f \n', ...
+             hp2(k,6), hp2(k,7), hp2(k,5));
+end
+
+diary off;
+\end{verbatim}
+
+        \color{lightgray} \begin{verbatim}
+Results for linear mean 2D MLE
+Dataset 1 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.173148, ell2 = 0.050000, sf = 0.414815, sn = 0.122222 
+mean slope1 = 1.233333, slope2 = -1.000000, intercept = 0.666667 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.136948, ell2 = 0.591196, sf = 0.449718, sn = 0.096313 
+mean slope1 = 1.460763, slope2 = -1.190490, intercept = 0.629445 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.172790, ell2 = 0.730702, sf = 0.658403, sn = 0.100910 
+mean slope1 = 1.617880, slope2 = -1.153163, intercept = 0.469492 
+True values: ell1 = 0.150000, ell2 = 0.500000, sf = 0.500000, sn = 0.100000 
+mean slope1 = 0.500000, slope2 = -1.000000, intercept = 1.000000 
+Dataset 2 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.278704, ell2 = 0.050000, sf = 0.503704, sn = 0.166667 
+mean slope1 = 0.996296, slope2 = -1.000000, intercept = 0.977778 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.263415, ell2 = 0.265768, sf = 0.318257, sn = 0.178015 
+mean slope1 = 0.099170, slope2 = 0.005249, intercept = 1.004556 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 3 iterations. 
+ell1 = 0.333093, ell2 = 0.338161, sf = 0.549859, sn = 0.180148 
+mean slope1 = -0.141126, slope2 = 0.015599, intercept = 1.154043 
+True values: ell1 = 0.250000, ell2 = 0.350000, sf = 0.400000, sn = 0.200000 
+mean slope1 = 0.800000, slope2 = 0.200000, intercept = 0.400000 
+Dataset 3 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.102778, ell2 = 0.050000, sf = 0.770370, sn = 0.448148 
+mean slope1 = 0.166667, slope2 = -1.000000, intercept = 0.977778 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.044467, ell2 = 0.562695, sf = 0.578043, sn = 0.281934 
+mean slope1 = -0.927712, slope2 = -0.027973, intercept = 1.360702 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.064807, ell2 = 0.645882, sf = 0.695580, sn = 0.283165 
+mean slope1 = -0.749265, slope2 = -0.073659, intercept = 1.348010 
+True values: ell1 = 0.100000, ell2 = 0.800000, sf = 1.000000, sn = 0.300000 
+mean slope1 = -0.100000, slope2 = 0.600000, intercept = 1.000000 
+Dataset 4 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.384259, ell2 = 0.050000, sf = 0.770370, sn = 0.107407 
+mean slope1 = 1.233333, slope2 = -1.000000, intercept = 0.488889 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.274318, ell2 = 0.146989, sf = 0.459329, sn = 0.099051 
+mean slope1 = 1.461867, slope2 = 1.304252, intercept = -0.816243 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.301972, ell2 = 0.158473, sf = 0.556433, sn = 0.101957 
+mean slope1 = 1.433739, slope2 = 1.205505, intercept = -0.741426 
+True values: ell1 = 0.300000, ell2 = 0.150000, sf = 0.500000, sn = 0.100000 
+mean slope1 = 1.000000, slope2 = 0.800000, intercept = -0.500000 
+Dataset 5 : 
+Sampling based optimization:
+Exceeded max fcn evals. Increase maxevals
+ell1 = 0.173148, ell2 = 0.050000, sf = 1.185185, sn = 0.240741 
+mean slope1 = 1.292593, slope2 = -1.000000, intercept = 0.977778 
+MLE: Derivative based optimization...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+ell1 = 0.157163, ell2 = 0.200518, sf = 1.211677, sn = 0.096195 
+mean slope1 = 0.762985, slope2 = 1.981844, intercept = -0.418633 
+REML...
+Starting from values ell1_0 = 1.000000, ell2_0 = 1.000000, sf0 = 1.000000, sn0 = 1.000000 
+beta0 = 1.000000, beta1 = 1.000000, beta2 = 1.000000 
+REML converged in 4 iterations. 
+ell1 = 0.159635, ell2 = 0.204682, sf = 1.290312, sn = 0.097569 
+mean slope1 = 0.777046, slope2 = 1.952173, intercept = -0.431151 
+True values: ell1 = 0.150000, ell2 = 0.200000, sf = 1.200000, sn = 0.100000 
+mean slope1 = 1.500000, slope2 = 1.300000, intercept = -0.200000 
+\end{verbatim} \color{black}
+    
+
+
+\end{document}
+    

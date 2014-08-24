@@ -1,0 +1,151 @@
+\documentclass[11pt,a4paper,twoside,openright]{report}
+
+\usepackage[english]{ETHDAsfs}
+\usepackage{amsbsy}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[longnamesfirst]{natbib}
+\usepackage{texab}
+%\usepackage{mathrsfs}
+\usepackage{enumerate}
+\usepackage{relsize}
+\usepackage{color} 
+\usepackage[cmex10]{amsmath}
+\usepackage{amsfonts}
+\usepackage{savesym}
+\usepackage{epstopdf}
+\savesymbol{IF}
+\usepackage{algorithmic}
+\usepackage[center]{caption}
+\usepackage{pstool}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{easybmat}
+\usepackage{hyperref} 
+\definecolor{Mygrey}{gray}{0.75}
+%%----------------------------------------------------------------------------
+
+%%------- Theoreme ---
+\newtheorem{definition}{Definition}[subsection]
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{Coro}[definition]{Corollary}
+\theoremstyle{definition} 
+\newtheorem{example}[definition]{Example}
+\newtheorem{proposition}{Proposition}
+\newtheorem*{note}{Note}
+\newtheorem*{remark}{Remark}
+
+\DeclareMathOperator*{\plim}{plim}
+\DeclareMathOperator{\Tr}{Tr}
+% \def\MR#1{\href{http://www.ams.org/mathscinet-getitem?mr=#1}{MR#1}}
+
+%% custom macros
+\newcommand{\state}{\mathbf{s}} % used to denote the system states
+\newcommand{\sysInput}{\mathbf{u}} % used to denote the system inputs
+\newcommand{\context}{\mathbf{c}} % used to denote contexts
+\newcommand{\observations}{\mathbf{y}} % used for the observed output
+\newcommand{\aatop}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}
+\newcommand{\defeq}{\mathrel{\mathop:}=}
+%\renewcommand{\theequation}{\arabic{equation}}
+\numberwithin{equation}{chapter}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Path for your figures
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set the paths where all figures are taken from:
+\graphicspath{{Pictures/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Define your own commands here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Bruch}[2]{{}^{#1}\!\!/\!_{#2}}
+\renewcommand{\labelenumi}{\roman{enumi}.)}
+
+
+\begin{document}
+\bibliographystyle{plain}
+
+\pagenumbering{roman}%- roman numbering for first few pages
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Title page
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\period{Spring 2013}
+\dasatype{Master Thesis}
+\students{Okan Ko\c c}
+\mainreaderprefix{Advisor:}
+\mainreader{Prof.\ Hans Rudolf K\" unsch}
+\alternatereaderprefix{Co-Advisor}
+\alternatereader{Prof.\ Raffaello D'Andrea}
+\submissiondate{March 10th 2013}
+\title{Gaussian Process \\ Optimization based Learning \\ for Trajectory Tracking}
+
+\maketitle
+\cleardoublepage
+ %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Insert here acknowledgements and abstract
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Dedication (optional)
+\markright{}
+\vspace*{\stretch{1}}
+\begin{center}
+    zum Wohl!
+\end{center}
+\vspace*{\stretch{2}}
+
+% Abstract should not be longer than one page.
+\newpage
+\markboth{Abstract}{Abstract}
+\include{Abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Table of contents and list of figures and 
+%%% tables (no need to change this usually)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+\listoftables
+
+%% Notations and glossary (optional)
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{\protect\numberline{}{Notation}}
+\markboth{Notation}{Notation}
+\include{Notation}
+
+\cleardoublepage
+\pagenumbering{arabic}%--- switch back to standard numbering 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Main text... 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setcounter{chapter}{-1}
+\include{Introduction}
+\include{Chapter1}
+\include{Chapter2}
+\include{Summary} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Bibliography                 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\addtocontents{toc}{\vspace{.5\baselineskip}}
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{\protect\numberline{}{Bibliography}}
+\bibliography{myReferences}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%% Appendices
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\addtocontents{toc}{\vspace{.5\baselineskip}}
+\appendix
+\include{Appendix1}
+\include{Appendix2}
+\include{Appendix3}
+
+\end{document}

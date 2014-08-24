@@ -1,0 +1,184 @@
+\section{Algorithm \alg}\label{sec:algorithm}
+
+%When the dynamics is sufficiently well learned, the learned stage cost might be rolled-out as in MPC over a suitable horizon to provide more stable trajectory tracking and approximate the minimization of the cost functional in \eqref{costDiscrete}.
+%Tracking the minimum of the would result in solving the following optimization problem at each time stage:
+%\begin{align}
+%\sysInput_{t} &= \operatorname*{arg\,min}_{\sysInput \in U} \cost_{t+1}(\state_{t}, \sysInput) \\
+%\state_{t+1} &=  \mathbf{f}(\state_t,\sysInput_t) \label{eq:realDynamics_discrete}
+%\end{align}
+%%where $U \subset \mathbb{R}^m$ is the feasible input space at time stage $t$.
+%But system dynamics $\mathbf{f}$ in (\ref{eq:realDynamics_discrete}) is not known. 
+%Since we have a nominal model, we can learn $\mathbf{f}$ indirectly by just learning the difference in cost predicted by the nominal model and the actual cost:
+
+The scalar cost $\cost(\sysInput;\context)$ is a function of inputs and contexts, and learning to minimize this function from scratch can be very impractical in most cases, due to the high-dimensionality of the state space. If we have a nominal model \eqref{nominal_model} at hand however, we can use the costs predicted by the nominal model. Hence the strategy that we follow in $\alg$ strikes a different balance between exploration and exploitation as opposed to \eqref{UCB}: we \emph{exploit} \eqref{nominal_model} from the very start, using the nominal model predicted cost $\hat{\cost}(\sysInput_t;\context_t) = d(\hat{\state}_{t+1},\traj_{t+1})$, a known function of $\sysInput_t$, as a prior. 
+We \emph{explore} only the difference in cost predicted by the nominal model and the actual cost:
+\begin{equation}
+\delta \cost_{t+1} = d(\state_{t+1},\traj_{t+1}) - d(\hat{\state}_{t+1},\traj_{t+1}) \label{eq:deltaC}
+\end{equation}
+
+%\begin{equation}
+%\sysInput_{t} = \operatorname*{arg\,max}_{\sysInput \in U}\mu_{t-1}(\sysInput;\context_t) + \beta_{t}^{1/2}\sigma_{t-1}(\sysInput;\context_t) \label{ucb}
+%\end{equation}
+%where $\mu_{t-1}$ and $\sigma_{t-1}$ are the posterior mean and standard deviation of the GP over the joint input-context space $U \times C$, and $\beta_{t}$ is the confidence parameter scaling exploration vs. exploitation for the particular problem. Thus, when presented with context $\context_t$, this algorithm uses GP-inference in (\ref{gpUpdate_mu}) and (\ref{gpUpdate_sigma}) to predict the mean and variance for each possible action $\sysInput$, conditioned on all the past observations. 
+
+With $\alg$ we adapt the greedy approach of \eqref{UCB} to the reinforcement learning case, and analyze its performance in trajectory tracking. See Figure \ref{fig:drawing2} for an illustration. Pseudocode for $\alg$ is provided in Algorithm~\ref{alg1}. $\alg$ at each time stage $t\geq 0$ uses the GP-update equations \eqref{gpUpdate_mu} -- \eqref{gpUpdate_sigma} over the joint input-context space $\mathcal{D} = \mathcal{U} \times \mathcal{C}$. It is conditioned on the sets $Z_{T-1}$ and $\observations_{T-1}$ acquired through sampling \eqref{UCB} at $t = (0,1,\ldots,T-1)$ with $\hat{q}(\sysInput;\context)$ added as a known mean function $\mu(\ctxaction)$ in \eqref{gpUpdate_mu}. 
+
+\begin{figure}
+	\centering
+	\def\svgwidth{\columnwidth}
+	\includesvg{figure2_pointTracking}
+	\caption{Illustrating trajectory tracking: $\state$ pursuing $\traj$. The gray areas depict the \emph{reachable} regions from the states $\state_{t-1}$ and $\state_{t}$.}
+	\label{fig:drawing2}
+\end{figure}
+
+$\alg$ is an episodic algorithm: the system will continue at each episode $\episode$ to track the given trajectory to a maximum of $N$ time stages and then will reset back to its initial state, ready to embark on the next episode $\episode + 1$. Furthermore $\alg$ continues with an episode $\episode$ as long as the system's trajectory stays within a certain threshold $\threshold$ of the desired state, i.e., $d(\state_{t\episode},\traj_{t}) < \threshold$. If the trajectory exceeds this bound, i.e. $d(\state_{t\episode},\traj_{t}) \geq \threshold$, the system is reset to its initial state. The stopping time is denoted by $\tau$ and the total number of time steps (throughout the episodes) by $T$. To differentiate the episodes, we add a further subscript to $\state$, $\sysInput$, $\context$ and $\cost$. For example, the state at time stage $t$ in episode $\episode$ is shown by $\state_{t\episode}$.
+
+\begin{algorithm}[tb]
+   \caption{\alg}
+   \label{alg1}
+\begin{algorithmic}
+   \STATE {\bfseries Input:} $\threshold > 0$, $\ \hat{\cost}(\ctxaction)$, $\ k(\ctxaction,\ctxaction')$, $\ \Traj = \{\traj_0, \traj_1, \ldots, \traj_N \}$
+   \STATE Initialize $\episode = 1$, $T = 0$, $\ Z = \emptyset$, $\ \observations = \emptyset$
+   \REPEAT 
+	   \STATE Initialize $t = 0$, $\ \state_{0\episode} = \traj_{0}$
+   	   \REPEAT
+   	   		\STATE $\context_{t\episode} \leftarrow (\state_{t\episode}, \traj_{t+1})$
+   	   		\STATE $\sysInput_{t\episode} \leftarrow \operatorname*{arg\,min}_{\sysInput \in U} \mu_T(\sysInput;\context_{t\episode}) - \beta_T^{1/2}\sigma_T(\sysInput;\context_{t\episode})$
+   	   		\STATE $Z \leftarrow Z \cup (\sysInput_{t\episode}; \context_{t\episode})$
+   	   		\STATE Observe $\delta \cost_{(t+1)\episode} = \cost_{(t+1)\episode} - \hat{\cost}_{(t+1)\episode}$
+   	   		\STATE $\observations \leftarrow \observations \cup \delta \cost_{(t+1)\episode}$
+   	   		\STATE $t \leftarrow t + 1$
+   	   \UNTIL{$d(\state_{t\episode},\traj_{t}) \geq \threshold$}  	
+   	   \STATE $T \leftarrow T + t$
+   	   \STATE $\episode \leftarrow \episode + 1$
+   \UNTIL{$t = N$}
+\end{algorithmic}
+\end{algorithm}
+
+In order to start $\alg$ we need to estimate the GP hyperparameters using any gathered data. Trial trajectory runs can be used to gather the necessary evaluations for hyperparameter estimation: contexts $\context$, actions $\sysInput$, and costs $\cost$. Actions in these trial runs are the feed-forward control inputs calculated using a nominal model. See \cite{Schoellig12} for feed-forward control signal generation of a differential flat system using splines. With maximum likelihood, we can estimate the hyperparameters $\theta$ of a specified kernel structure $k(\ctxaction,\ctxaction')$. For example, if the kernel is squared exponential:
+\begin{align*}
+k(\ctxaction,\ctxaction') = \sigma_s^{2}\exp^{-1/2(\ctxaction - \ctxaction')^{\mathrm{T}}\Theta_{\ctxaction}^{-1}(\ctxaction - \ctxaction')} %\label{squared-exponential}
+\end{align*}
+then $\theta = (\sigma_s, \vartheta_{\context}, \vartheta_{\sysInput}) \in \mathbb{R}^{2n+m+1}$, where for the diagonal block matrix $\Theta_{\ctxaction} = \bigl(\begin{smallmatrix} \Theta_{\context}&0 \\ 0&\Theta_{\sysInput} \end{smallmatrix} \bigr)$ $\vartheta_{\context} = \text{diag}(\Theta_{\context})$ and $\vartheta_{\sysInput} = \text{diag}(\Theta_{\sysInput})$. 
+
+%This constant $\beta$ balances exploration-exploitation and plays a big role in showing sublinear regret \cite{Srinivas09} but its scale has not been optimized in the proofs. Hence we find that by dividing the theoretical $\beta_{k}$ value given in Theorem 1 \cite{Krause11} by 5-20, we provide more aggression for optimization and increase overall performance. Alternatively Reproducing Kernel Hilbert Space (RKHS) approach can also be used for sufficiently smooth cost functions. 
+
+%The quantile-based distribution in line 10 is multi-modal and the associated optimization will be non-convex in general. For low-dimensional inputs we can use the \emph{DIRECT} (Dividing Rectangles) algorithm \cite{Jones93,Brochu10}, which samples hierarchically through search space, or MATLAB's constrained global optimization routine \emph{fmincon}, among others.
+
+%If the system inputs are constrained to lie within a certain bounded set $U \subset \mathbb{R}^{m}$, then the optimization (\ref{boostedUCB}) should be constrained within that set. As a last step, GP is conditioned on the sampled control input and the cost difference incurred along the trajectory.  
+
+\subsection{Analysis}\label{sec:analysis}
+
+In this subsection, we prove the convergence~\footnote{As noted in section \ref{sec:bground} we can only prove the convergence of a subsequence of inputs.} of the proposed algorithm $\alg$ under the following three assumptions: trackability, controllability, and smooth perturbations of the nominal model.
+
+\paragraph{Trackability.} We can view trajectory tracking as tracking a point $\traj$ that moves with a certain input sequence $v(t)$ on $\Traj$. We assume that the trajectory $\Traj$ is \emph{trackable}, i.e. $\forall t \ \exists{v(t)} \in \mathcal{U} \ \text{s.t.} \ \traj_{t+1} = \dynamics(\traj_t,v(t))$. We believe this is a fair assumption to make, otherwise no algorithm can come up with an input sequence $v(t)$ to track $\Traj$. In general a trajectory generation algorithm has access to the nominal model \eqref{nominal_model} and the trajectory generation must be performed \emph{robustly} so that the system can still follow it under the perturbed model \eqref{eq:readDynamics}.
+%The regrets are showns as $r_{t\episode}$, in keeping with the previous notational change.
+
+Furthermore, we assume that we can start the system at $\traj_0 \in \Traj$, i.e. $\cost_{0\episode} = 0 \ \forall \episode$. Otherwise, the trajectory $\Traj$ must be recomputed to accommodate for the variation in $\state_0$.
+
+\paragraph{Controllability.} The \emph{stopping time} $\tau(\episode)$ for every episode $\episode$ denotes, as previously introduced, the time stage when the cost function exceeds a certain $\threshold > 0$:
+\begin{align}
+\cost_{1\episode} &= r_{1\episode} \nonumber \\
+\cost_{2\episode} &= r_{1\episode} + r_{2\episode} - \lambda(\state_{1\episode}) \nonumber \\
+\vdots \nonumber \\
+\cost_{\tau \episode} &= \sum_{i=1}^{\tau(\episode)} \big(r_{i\episode} - \lambda(\state_{(i-1)\episode})\big) \geq \threshold \label{stopping-time}
+\end{align}
+where we define the maximum decrease of the cost function as:
+\begin{align}
+\lambda(\context_t) = \cost_{t} - \cost_{t+1}^{*} = \cost_{t} - \min\limits_{\sysInput \in \mathcal{U}} \cost_{t+1}(\sysInput; \context_t) \label{defn-lambda}
+\end{align}
+We assume this to be nonnegative throughout the state space: $\lambda(\context) \geq 0, \forall \state \in B(\traj_t, \epsilon_{max})$ where we take $\epsilon_{max} > 0$. This is an important assumption that lets us focus exclusively on the next desired state. One way to relate it to control theory is to assert that the cost functions $\cost(\sysInput; \context)$ are discrete-time \emph{weak} Control Lyapunov Functions for all $\state_t \in B(\traj_t,\epsilon_{max})$, i.e.
+\begin{align}
+\min\limits_{\sysInput \in \mathcal{U}} \cost_{t} - \cost_{t+1}(\sysInput; \state_t, \traj_{t+1}) \leq 0
+\end{align}
+Geometrically this means that the dynamics \eqref{eq:readDynamics} must be a nonexpansive mapping with respect to the semimetric defining the cost function. That is, $\forall \state_t \in B(\traj_t,\epsilon_{max})$, $\ \exists \phi_t(\state_t) \in \mathcal{U}$ s.t. $\phi_t(\traj_t) = v(t)$:
+\begin{align}
+d(\state_{t+1}, \traj_{t+1}) \leq L(\sysInput) \, d(\state_{t}, \traj_{t}) 
+\end{align}
+where $L(\sysInput) \leq 1$ for $u = \phi_t(\state_t)$. Note that both enforce the \emph{relaxed} condition: $\lambda(\context) \geq 0$. Inequality is not needed since we assume that we can start at $\state_0 = \traj_0$. See Figure \ref{fig:drawing3} for an illustration of the nonexpansive mapping principle. The \emph{contractability} of the balls $B(\traj_t,\threshold)$ for any $\threshold < \epsilon_{max}$ around the trajectory points $\traj_t$ imply the existence of a control input $u$, for every state $\state_t$ inside these balls, which will bring the state closer to the next desired state $\traj_{t+1} \in \Traj$.
+
+\begin{figure}
+	\centering
+	\def\svgwidth{\columnwidth}
+	\includesvg{contraction_mapping_new}
+	\caption{Illustrating the controllability assumption: for all states $\state_t \in B(\traj_t,\threshold$) there exists a $\sysInput$ such that $x_{t+1}$ does not move away from $\traj_{t+1}$ as a result of the nonexpansive mapping, i.e. $\cost_{t+1} \leq \cost_{t} \leq \threshold < \epsilon_{max}$.}
+	\label{fig:drawing3}
+\end{figure}
+
+\paragraph{Smooth perturbations.} We assume the cost function difference $\delta \cost$ is sufficiently smooth: its RKHS-norm must be bounded in order to put a (sublinear) bound on the (cumulative) regret: $\|\delta \cost(\sysInput; \context)\|_{k}^{2} \leq B$ for some $B < \infty$ where $k(\ctxaction, \ctxaction')$ is any valid combination of linear and squared exponential kernels. This assumption directly carries over from \cite{Krause11}: the sublinear regret bound for \emph{minimizing $\delta \cost$} holds if
+\begin{align}
+\text{Pr}\{\forall T, \|\mu_{T} - \delta\cost\|_{k_{T}}^{2} \leq \beta_{T+1} \} \geq 1 - \delta \label{RKHS-bound}
+\end{align}
+for $\beta_{T} = 2\|\delta\cost\|_{k}^{2} + 300\gamma_{T}\log^{3}(T/\delta)$ after sampling $Z_{T}$ by following \eqref{UCB} $T$ times. The bounds in \eqref{RKHS-bound} depend on $\gamma_T$ which quantifies the worst-case-scenario for GP-optimization and hence they still hold for $\alg$ after sampling $Z'_{T}$, different from $Z_{T}$ due to the addition of the nominal model predicted cost $\hat{q}(\sysInput;\context)$ as a known function of inputs and contexts to \eqref{UCB}.
+
+Under these assumptions we have the following result: \\
+
+\begin{theorem}\label{theorem1}
+Let $\traj_t \in \Traj$ be trackable for $t = 1, \ldots, N$. If $\lambda(\context_t) \geq 0$ for some $\epsilon_{max} > 0$ around $\Traj$ and $\|\delta \cost(\sysInput; \context)\|_{k}^{2} \leq B$ for any valid combination $k(\ctxaction,\ctxaction')$ of linear or squared exponential kernels then the following holds with high probability: $\forall \epsilon > 0, \ \exists \episode \in \mathbb{N} \ s.t. \ \ValueFunction_{\episode} \leq \epsilon$.
+\end{theorem}
+\begin{proof}
+Let $\numepisode$ be the total number of episodes. The total number of time stages is denoted by $T = \sum_{\episode=1}^{\numepisode} \tau(\episode)$. Picking any positive $\threshold < \epsilon_{max}$ we can rewrite \eqref{stopping-time} for a fixed $\episode$ as:
+\begin{align}
+&\sum_{i=1}^{\tau(\episode)} r_{i\episode} \geq \threshold + \underbrace{\sum_{i=0}^{\tau(\episode)-1} \lambda(\context_{i\episode})}_{=: \Lambda_\episode} \\
+&\underbrace{\sum_{\episode=1}^{\numepisode(T)}\sum_{i=1}^{\tau(\episode)} r_{i\episode}}_{R_{T}} \geq \threshold \numepisode + \sum_{\episode=1}^{\numepisode(T)}\Lambda_\episode
+\end{align}
+
+Using the sublinearity of cumulative regret, and taking the limit:
+\begin{align}
+&\sum_{\episode=1}^{\numepisode(T)}\Lambda_\episode + \threshold \numepisode \leq R_{T} \leq \sqrt{\kappa T \beta_{T} \gamma_{T}} \label{pre-limit-T} \\
+&\lim\limits_{T \to \infty} \frac{\sum_{\episode=1}^{\numepisode(T)}\Lambda_\episode + \threshold \numepisode}{T} = 0 \label{limit-T}
+\end{align}
+holds with high probability $p \geq 1 - \delta$. Assume that as $T \to \infty$, $\tau(\episode)$ never exceeds $N$. Then $\numepisode \geq T/N$. Since $\Lambda_\episode \geq 0, \ \forall \episode = 1,\ldots,\numepisode$, we have:
+\begin{align}
+\frac{\sum_{\episode=1}^{\numepisode(T)}\Lambda_\episode + \threshold \numepisode}{T} \geq \frac{\threshold}{N}
+\end{align}
+which when taken the limit $T \to \infty$ contradicts \eqref{limit-T}. Hence if \eqref{cum-regret} holds there must be an episode $\episode$ where $\tau(\episode)$  exceeds $N$. This means that for every $\epsilon > 0$, taking $\epsilon_s < \min(\epsilon/N, \epsilon_{max})$, if we try long enough w.h.p. there will be an episode $\episode$ where \eqref{costDiscrete} drops below $\epsilon$:
+\begin{align}
+\ValueFunction_\episode = \sum_{t=1}^{N} \cost_{t\episode} \leq N\frac{\epsilon}{N} = \epsilon
+\end{align}
+\end{proof}
+
+Furthermore, the following proposition gives a bound on the total time stage $T$ when $\ValueFunction_\episode \leq \epsilon$. \\
+
+\begin{prop}\label{Proposition2}
+Under the same assumptions as in Theorem \ref{theorem1}, the following holds with high probability: $\forall \epsilon > 0, \ \exists \episode \in \mathbb{N} \ s.t. \ \ValueFunction_{\episode} \leq \epsilon$ before $T \leq T_{max} = \big(\frac{N\alpha}{\threshold}\big)^{4}$ where $\alpha < \infty$ s.t. $\beta_T\gamma_T \leq \alpha T^{1/4}$.
+\end{prop}
+
+\begin{proof}
+See Appendix.
+\end{proof}
+
+%The minimization of a scalar cost function is a greedy approach and may not lead to the minimization of \eqref{costDiscrete} or a stable trajectory tracking performance in general, even though learning takes place. This is because $\traj \in \Traj(t)$ may not always be tracked, i.e. it might be infeasible given the current position $\state_{t}$. Hence we need to make certain assumptions about the state space and the trajectory tracking setup if we want to show convergence.
+
+\subsection{Transfer Learning}\label{t-learning}
+Transfer learning is the transfer of knowledge from one domain or \emph{problem} to another. Transfer learning is one of the advantages that a GP-based optimization algorithm such as $\alg$ has over more conventional learning methods like ILC, where the dynamics are linearized around a trajectory. After linearization, the geometric structure of the differential equation is often lost. If the disturbance dynamics is sufficiently smooth over the state space of different trajectories, or the trajectories are sufficiently close, we expect $\alg$ to transfer learned dynamics between similar contexts.
+
+To investigate the degree of transfer in this setting, consider two different cases $a$ and $b$. In case $a$ a learning algorithm runs on trajectory $\Traj_1$ for a duration of $T_1$ steps, sampling $\dataset_{T_1} = \{\ctxaction_1, \ldots, \ctxaction_{T_1}\}$ and then continuing on a different trajectory $\Traj_2$ for $T_2$ steps; while in case $b$, it runs \emph{from scratch} on $\Traj_2$ for $T_2$ steps. 
+
+As a way to measure the performance gain with $\alg$, we could look at the reduction in cumulative regret for this problem: $R_{T_{2}} - R_{T_{2}|\dataset_{T_1}}$ where $R_{T|Z}$ stands for the cumulative regret after conditioning on observations $Z_{T_1}$ before $t = 0$. However we only have sublinear regret bounds and can not quantify this degree of transfer any further. Instead we propose to look at the bounds of cumulative regret, which leads us to the following proposition:
+
+\begin{prop}\label{Proposition3}
+The sublinear bounds $\mathcal{B}_T(\dataset) = \sqrt{\kappa T \beta_{T|\dataset} \gamma_{T|\dataset}}$ bounding the cumulative regret $R_{T|\dataset}$ after sampling $\dataset \subset \mathcal{D}$ are nonincreasing, i.e., for any $\dataset \subset \dataset'$, $\mathcal{B}_T(\dataset) \geq \mathcal{B}_T(\dataset')$.
+\end{prop}
+
+\begin{proof}
+The cumulative regret is bounded as $R_{T|\dataset} \leq \mathcal{B}_T(\dataset) = \sqrt{\kappa T \beta_{T|\dataset} \gamma_{T|\dataset}}$ where:
+\begin{align*}
+\gamma_{T|\dataset}  &= \max_{A \subset \mathcal{D}\setminus \dataset: |A| = T} \mathcal{I}(\observations_{A};\cost|\dataset) \\
+&= \max_{A \subset \mathcal{D}\setminus \dataset: |A| = T} H(\observations_{A}|\dataset) - H(\observations_{A}|\cost),
+\end{align*}
+$\mathcal{I}(\observations_{A};\cost|\dataset)$ is the \emph{conditional} information gain due to sampling $A$ after sampling $\dataset$. Now since  $H(\observations_{A}|\dataset) \geq H(\observations_{A}|\dataset') $  for Gaussians when $\dataset' \supset \dataset$, $\gamma_{T|\dataset} \geq \gamma_{T|\dataset'} $. This means that $\mathcal{B}_T(\dataset)$, monotonically increasing with respect to $\gamma_T$, is also nonincreasing.
+\end{proof}
+
+In our previous problem formulation, with the help of this proposition we can immediately infer that the transfer gain from case $a$ to case $b$ is nonnegative, i.e. $\mathcal{G}_{ab} = \mathcal{B}_{T_2}(\dataset_{T_1}) - \mathcal{B}_{T_2}(\emptyset) \geq 0$. %Equivalently we can look at the reduction in the maximal information gain to measure transfer gain $\mathcal{G}_{ab}$. For covariance matrices $\mathbf{K}_{A} = [k(\ctxaction,\ctxaction')]_{\ctxaction,\ctxaction' \in \dataset_{A}}$ and $\mathbf{K}_{A|\dataset_{T_1}} = [k_{T_1}(\ctxaction,\ctxaction')]_{\ctxaction,\ctxaction' \in \dataset_{A}}$ with $k(\ctxaction,\ctxaction')$ and $k_{T_1}(\ctxaction,\ctxaction')$ as in \eqref{gpUpdate_covar} we can directly see the nonnegativity of $\mathcal{G}_{ab}$:
+%\begin{align}
+%\mathcal{G}_{ab} &= \gamma_{T_2} - \gamma_{T_2|\dataset_{T_1}} \label{transfer-learning} \\
+%&\geq \min_{A \subset \mathcal{D}: |A| = T_2} H(\mathcal{N}(0,\mathbf{K}_{A})) - H(\mathcal{N}(\mu_{T_{1}},\mathbf{K}_{A|\dataset_{T_1}})) \nonumber \\
+%&\geq \min_{A \subset \mathcal{D}: |A| = T_2} \frac{1}{2}\log|(\sigma_n^{2} + \mathbf{K}_{A})^{-1}(\sigma_n^{2} + \mathbf{K}^{b}_{A})| \nonumber \\
+%&\geq 0 \nonumber
+%\end{align}
+%since the Gram matrix $\mathbf{K}_{A} - \mathbf{K}_{A|\dataset_{T_1}} \succeq 0$ with the inner product $\langle \ctxaction, \ctxaction' \rangle = \mathbf{k}_t(\ctxaction)^{\mathrm{T}}\big(\mathbf{K}_t + \sigma_{n}^{2}\mathbf{I}\big)^{-1} \mathbf{k}_t(\ctxaction')$. 
+
+%We consider two cases of transfer learning with $\alg$:
+%1. \emph{From one dynamics to another}. We can run the learning algorithm on the dynamics $\dynamics$ using a nominal model taken from $\dynamicsNominal$ with covariance $k_{T_1}(\ctxaction,\ctxaction')$ and compare with the performance of the algorithm that would run from scratch, i.e. with covariance $k(\ctxaction,\ctxaction')$.
+%2. \emph{From one trajectory to another}. If we run the algorithm on $\Traj_1(t)$ for time $T_1$ and on $\Traj_2(t)$ for time $T_2$, the transfer gain due to $\Traj_1(t)$ compared to running the algorithm just on $\Traj_2(t)$ for time $T_2$ is dependent on the trajectories. \eqref{transfer-learning} increases as the trajectories $\Traj_2$ and $\Traj_1$ get close to each other, and depends on the smoothness of the contexts.
