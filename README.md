@@ -13,12 +13,12 @@ TODO List for TGP (Tracking with Gaussian Processes):
 - Find an implemented version of PILCO + reference tracking + nominal model (Multi-Task PILCO, P.Englert)
 - Learn faster in complicated dynamical mismatches. Things to try:
 
-  reward shaping, 
-  feedback added learning (indirect model learning)
-  conditioning on estimation data
-  using options in a hierarchical bandits setting [can mpc be incorporated to this approach with predetermined/flexible horizon?]
-  parametrize inputs cleverly [Gaussians or time varying linear feedback control structure?]
-  oracles: phasing as in DMP to get smooth approximating trajectories [could parameters be optimized via RKSH norm of cost differences?]
+  1. reward shaping, 
+  2. feedback added learning (indirect model learning)
+  3. conditioning on estimation data
+  4. using options in a hierarchical bandits setting [can mpc be incorporated to this approach with predetermined/flexible horizon?]
+  5. parametrize inputs cleverly [Gaussians or time varying linear feedback control structure?]
+  6. oracles: phasing as in DMP to get smooth approximating trajectories [could parameters be optimized via RKSH norm of cost differences?]
 
 Remarks:
 
