@@ -8,7 +8,7 @@ Gaussian Process Optimization based Learning for Trajectory Tracking, Okan Koc, 
 TODO List for TGP (Tracking with Gaussian Processes):
 
 - Implement the saturating cost and compare performance with quadratic cost
-- Make simple regret experiments to compare the acquisition functions of GPUCB, EI and the new algorithm GP-MI
+- Include the trajectory generation algorithm using splines as a new class (which can be later extended)
 - Include acquisition functions as a subclass of contextual bandits
 - Find an implemented version of PILCO + reference tracking + nominal model (Multi-Task PILCO, P.Englert)
 - Learn faster in complicated dynamical mismatches. Things to try:

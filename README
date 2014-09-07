@@ -50,7 +50,7 @@ kernel     - Handle for the kernel function.
              Can be squared exponential (iso/ard) or linear (iso/ard).
 quad_feas_con - Feasibility constraints function for the quadrotor.
                 Called by quad_traj_gen.
-quad_traj_gen - Script running the trajectory generation using splines
+quad_traj_gen - Function running the trajectory generation using splines
                 method for quadrotors.
 
          

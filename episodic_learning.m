@@ -7,7 +7,7 @@
 
 %% Prepare experiments and estimate hyperparameters     
 clc; clear; close all;
-fix_root();
+fix_root('~/');
 quad_initialize; % create structures for quadrotor operation here
 quad = Quadrotor(par,dist,con,Q);
 shapes = {'Wave','Wave','Wave','Wave','Wave'};

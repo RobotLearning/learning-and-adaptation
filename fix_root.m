@@ -9,5 +9,5 @@ function root = fix_root(rootName)
         if nargin == 0
             error('Please provide the root name');
         end
-        root = [rootName, '/Learning-and-Adaptation/'];
+        root = [rootName, '/learning-and-adaptation/'];
     end
