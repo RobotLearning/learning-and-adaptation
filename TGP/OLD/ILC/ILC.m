@@ -14,9 +14,9 @@ function [err,u_app] = ILC(t,x_nom,u_trj,fun,STR,num_iters)
 
 %%%%%%%%%%%%%%%%% RELEASE STRUCTURE %%%%%%%%%%%%%%%%%%%%%%
 dim_x = STR.dim_x;
-dim = STR.dim;
+dim_u = STR.dim_u;
 w = STR.w;
-sse_cost = STR.sse_cost;
+lsq_cost = STR.lsq_cost;
 PAR = STR.PAR;
 COV = STR.COV;
 CON = STR.CON;
@@ -44,9 +44,9 @@ h = t(2) - t(1); % assuming uniform discretization
 % holds the trajectory deviation norms
 diff = zeros(1,num_iters); 
 % deviation of control input
-u = zeros(dim*Nu,1); 
+u = zeros(dim_u*Nu,1); 
 % store applied inputs here
-u_app = zeros(dim, N, num_iters); 
+u_app = zeros(dim_u, N, num_iters); 
 % store errors (traj. deviation) here
 err = Inf(dim_x*N,num_iters); 
 
@@ -55,15 +55,15 @@ while iter <= num_iters
     
     fprintf('Iteration no %d \n', iter); 
     % complete u to match the dimensions of x
-    u_iter = [u; u(end-dim+1:end)]; 
+    u_iter = [u; u(end-dim_u+1:end)]; 
     % regroup into suitable matrix for simulation
-    u_in = reshape(u_iter,dim,N);
+    u_in = reshape(u_iter,dim_u,N);
     % save for later use
     u_app(:,:,iter) = u_trj + u_in;
     % get error (observed trajectory deviation)
     [x_iter, y_dev] = fun(t, u_trj, u_in, x_nom, PAR, COV, CON);
     % get frobenius-norm error
-    diff(iter) = sse_cost(x_iter,x_nom,w);
+    diff(iter) = lsq_cost(x_iter,x_nom,w);
     err(:,iter) = y_dev;
     
     %%%%%%%%%%%% STATE ERROR ESTIMATION %%%%%%%%%%%%%%%%%%%%%%%
@@ -86,11 +86,11 @@ while iter <= num_iters
     end
     % input deviation penalty matrix D
     D0 = eye(length(u)); 
-    D1 = (diag(ones(1,dim*(Nu-1)),dim) - eye(dim*Nu))/h;
-    D1 = D1(1:end-dim,:); % D1 is (Nu-1)*nu x Nu*nu dimensional
-    D2 = (diag(ones(1,dim*(Nu-2)),2*dim) - ... 
-         2*diag(ones(1,dim*(Nu-1)),dim) + eye(dim*Nu))/(h^2);
-    D2 = D2(1:end-2*dim,:); % D2 is (Nu-2)*nu x Nu*nu dimensional
+    D1 = (diag(ones(1,dim_u*(Nu-1)),dim_u) - eye(dim_u*Nu))/h;
+    D1 = D1(1:end-dim_u,:); % D1 is (Nu-1)*nu x Nu*nu dimensional
+    D2 = (diag(ones(1,dim_u*(Nu-2)),2*dim_u) - ... 
+         2*diag(ones(1,dim_u*(Nu-1)),dim_u) + eye(dim_u*Nu))/(h^2);
+    D2 = D2(1:end-2*dim_u,:); % D2 is (Nu-2)*nu x Nu*nu dimensional
     % penalty scale
     a0 = 5e-5; a1 = 5e-5; a2 = 5e-5;
     % slack for input u

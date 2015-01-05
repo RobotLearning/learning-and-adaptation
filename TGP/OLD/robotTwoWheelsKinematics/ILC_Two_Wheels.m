@@ -16,7 +16,7 @@ CON.w2_cnstr = 100;
 
 %%%%%%%%%%%%%%%%%%%%%%% Simulation Values %%%%%%%%%%%%%%%%%
 % dimension of the x vector
-dim = 3;
+dim_x = 3;
 % dimension of the control input
 dim_u = 2;
 % time step h 
@@ -26,12 +26,12 @@ t = 0:h:tfinal;
 N = tfinal/h + 1; 
 Nu = N-1; % one less than the length of t
 % noise and initial error
-eps = 0.03;
+eps = 0.003;
 eps_M = 0.005; % covar of the lifted-domain noise
 d0_hat = 0;
-P0 = eye(N*dim);
+P0 = eye(N*dim_x);
 % state trajectories
-x = zeros(dim, N);
+x = zeros(dim_x, N);
 x_0 = 0; y_0 = 0; phi_0 = pi/6; % initial conditions
 
 %% Create desired trajectory and linearized model
@@ -48,8 +48,8 @@ CON.w2_cnstr = 150;
 STR = construct_model(t,x,PAR,u_trj,CON);
 
 % lifted-domain noise covariance
-M = eps_M * eye(N*dim); % covariance of process x measurement noise
-Omega0 = eps * eye(N*dim); % initial covariance of d noise
+M = eps_M * eye(N*dim_x); % covariance of process x measurement noise
+Omega0 = eps * eye(N*dim_x); % initial covariance of d noise
 
 %% Iterative Learning Control
 
@@ -59,7 +59,7 @@ lsq_cost = @(x1,x2,w) norm(x1([1,2],:)-x2([1,2],:),2);
 
 %%%%%%%%%%%%%%%%% CONSTRUCT SCALING MATRIX S %%%%%%%%%%%%%
 % penalize only deviations given by the matrix
-Sx = eye(dim); % scaling matrix
+Sx = eye(dim_x); % scaling matrix
 Sw = diag([1, 1, 0]); % weighing trajectory deviation by these values
 w_l = 0.0; % put weight on last w_l second 
 % emphasizing the performance objective of reaching upright position
@@ -69,7 +69,7 @@ Sx1 = cell(1,N - last);
 Sx1 = blkdiag(Sx1{:});
 Sx2 = cell(1,last);
 % termination matrix
-Tw = diag(ones(1,dim));
+Tw = diag(ones(1,dim_x));
 mat = Tw * Sx * Sw; 
 [Sx2{:}] = deal(mat);
 Sx2 = blkdiag(Sx2{:});
@@ -77,13 +77,13 @@ S = blkdiag(Sx1,Sx2);
 
 %%%%%%%%%%%%%%%% PASS TO STRUCTURE %%%%%%%%%%%%%%%%%%%%%%%
 % Pass necessary parameters through structure
-STR.dim = dim;
+STR.dim_x = dim_x;
 STR.dim_u = dim_u;
 STR.COV.Omega = Omega0;
 STR.COV.M = M;
 STR.CON = CON;
 STR.PAR = PAR;
-STR.d0 = d0_hat * ones(N*dim,1);
+STR.d0 = d0_hat * ones(N*dim_x,1);
 STR.P0 = P0;
 STR.w = w;
 STR.lsq_cost = lsq_cost;

@@ -57,3 +57,6 @@ title('Control input w1 over iterations');
 subplot(2,3,5);
 plot(t, u_trj(2,:),'r'); hold on;
 title('Control input w2 over iterations');
+
+% figure(2);
+% plot(x(1,:),x(2,:),'r'); hold on;
