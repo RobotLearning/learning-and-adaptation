@@ -56,7 +56,7 @@ Sigma = ker_matrix(X',ker_handle);
 % evaluate the function
 
 % FIRST METHOD - Sigma must be positive definite
-%{
+%%{
 fun = zeros(trials, meshsize);
 % small epsilon to keep matrix positive definite
 eps = 0.003;
@@ -65,7 +65,7 @@ for i = 1:trials
 end
 %}
 % SECOND METHOD - requires statistical toolbox though!
-fun = mvnrnd(mu, Sigma, trials);
+%fun = mvnrnd(mu, Sigma, trials);
 
 % plot the first function generated
 if dim == 2
