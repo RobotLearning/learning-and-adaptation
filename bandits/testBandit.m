@@ -6,26 +6,29 @@ clc; clear; close all;
 % average over M trials
 M = 100;
 % number of arms
-K = 10;
+K = 50;
 % horizon, i.e. total num of time stages
-N = 200;
+N = 1000;
 
 numAlgs = 4;
 strategy{1}.name = 'EPS-GREEDY';
 strategy{1}.eps = @(t) 10/t;
 strategy{2}.name = 'UCB1';
-strategy{2}.rho = 2;
-strategy{3}.name = 'UCB1-N';
-strategy{4}.name = 'UCB1-V';
+strategy{2}.rho = 1;
+strategy{3}.name = 'UCB1-V';
+strategy{4}.name = 'ThompsonGauss';
+strategy{4}.a = 10;
+strategy{4}.b = 0.5;
 
 regret = zeros(numAlgs,N);
 cum_regret = zeros(numAlgs,N);
 idx = zeros(numAlgs,1);
 
 for j = 1:M
+    
     % generating K gaussians
-    mu = rand(K,1);
-    var = rand(K,1);
+    mu = 1*rand(K,1);
+    var = 1*rand(K,1);
     
     % initialize different bandit strategies
     for k = 1:numAlgs
@@ -52,4 +55,4 @@ end
 
 % plot cumulative regret
 plot(cum_regret'/M);
-legend('\epsilon-Greedy','UCB_1','UCB_1-N','UCB_1-V');
+legend('\epsilon-Greedy','UCB_1','UCB_1-V','Thompson');

@@ -36,7 +36,15 @@ mu = zeros(meshsize,1);
 % specify variance
 Sigma = ker_matrix(mesh,ker); 
 % requires statistical toolbox
-fun = mvnrnd(mu, Sigma, trials);
+if exist('mvnrnd')
+    fun = mvnrnd(mu, Sigma, trials);
+else
+    for i = 1:trials
+        lambda = 1e-3;
+        fun(:,i) = mu + chol(Sigma + lambda*eye(meshsize))*randn(meshsize,1);
+    end
+    fun = fun';
+end
 % plot some of the functions
 figure(1);
 plotsize = min(5,trials);
