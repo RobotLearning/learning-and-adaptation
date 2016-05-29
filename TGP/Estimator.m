@@ -106,7 +106,7 @@ classdef Estimator < handle
         % dnlZ: derivative of above
         function mle(obj,x,y)
             Ncg = 100;
-            addpath('../gpml-matlab-v3.1-2010-09-27/util/');
+            addpath('../../gpml-matlab-v3.1-2010-09-27/util/');
             obj.hp = minimize(obj.hp, @gp, -Ncg, ...
                            obj.inf, obj.mean, obj.cov, obj.lik, x, y);
             %inferred noise standard deviation

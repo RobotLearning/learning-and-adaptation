@@ -46,7 +46,7 @@ classdef Filter < handle
         function predict(obj,u)
             
             obj.x = obj.A * obj.x + obj.B * u;
-            obj.P = obj.A * obj.P * obj.A + obj.Omega;
+            obj.P = obj.A * obj.P * obj.A' + obj.Omega;
         end
         
         % update Kalman filter variance
