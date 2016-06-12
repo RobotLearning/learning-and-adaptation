@@ -4,6 +4,7 @@
 n = 20;
 % number of data points each round (K rounds)
 N = 20;
+rng(2);
 
 % prior precision matrix
 Gamma = 100.0 * eye(n);
@@ -18,7 +19,7 @@ b = var_nom;
 
 % draw some values
 % make K experiments
-K = 10;
+K = 100;
 err_mean = zeros(K,1);
 err_var = zeros(K,1);
 log_det_inv_gamma = zeros(K,1);
@@ -29,11 +30,9 @@ for i = 1:K
     eps = sqrt(var) * randn(N,1);
     y = X * beta + eps;
     % calculate posterior
-    a = a + n/2;
-    b = b + 0.5 * (y'*y + mu'*Gamma*mu);
-    mu = (X'*X + Gamma)\(Gamma*mu + X'*y);
-    Gamma = (X'*X + Gamma);
-    b = b - 0.5 * (mu'*Gamma*mu);
+    hp.a = a; hp.b = b;
+    [mu,Gamma,hp] = LBR(mu,Gamma,X,y,hp);
+    a = hp.a; b = hp.b;
     % calculate error
     err_mean(i) = norm(beta - mu,2);
     err_var(i) = norm((b/(a-1)) - var,2);
@@ -46,4 +45,7 @@ end
 
 % batch regression for comparison
 mu_batch = Xs \ ys;
-err_batch = norm(mu_batch - beta,2);
+err_batch = norm(mu_batch - beta,2)
+
+plot(err_mean);
+title('Error norm for beta estimate over iterations');

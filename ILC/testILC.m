@@ -37,12 +37,14 @@ err_min_norm = norm((eye(n*N)-F_act*pinv(F_act))*ref,2)
 disp('Min error with nom model pinv');
 err_min_nom_norm = norm((eye(n*N)-F_act*((pinv(F_nom)*F_act)\pinv(F_nom)))*ref,2)
 
+ilc = ILC(F_nom);
+
 % we assume no noise for now
 for i = 1:K-1
     % get error
     E(:,i) = F_act * U(:,i) - ref;
     % ILC happening here
-    U(:,i+1) = ilc(U(:,1:i),E(:,1:i),'simple',F_nom);
+    U(:,i+1) = ilc.invertModel(U(:,1:i),E(:,1:i),0,0);
     % get norm of error
     err_norm(i) = norm(E(:,i),2);
 end
