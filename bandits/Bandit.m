@@ -32,10 +32,16 @@ classdef Bandit < handle
             end
             
             % prepare the priors
-            if strcmp(obj.strategy.name,'ThompsonGauss')
+            if strfind(obj.strategy.name,'Thompson')
                 obj.cnt = ones(arms,1);
                 obj.strategy.prior.var.a = obj.strategy.a * ones(arms,1);
                 obj.strategy.prior.var.b = obj.strategy.b * ones(arms,1);
+            end
+            
+            if strfind(obj.strategy.name,'Cautious')
+                % add sampling number
+                obj.strategy.sample_num = obj.strategy.sample_num;
+                obj.strategy.last_arm = 1;
             end
         end
         
@@ -45,23 +51,25 @@ classdef Bandit < handle
             arms = length(obj.mean);
             switch obj.strategy.name
                 case 'EPS-GREEDY'
-                    idx = obj.epsGreedy(arms);                    
+                    idx = obj.epsGreedy(arms);
                 case 'EPS-FIRST'
                     idx = obj.epsFirst(arms);
                 case 'UCB1'
                     idx = obj.ucb1(arms);
                 case 'UCB1-V'
                     idx = obj.ucb1Variance(arms);
-                case 'ThompsonGauss'
-                    idx = obj.thompsonGauss(arms);
+                case 'Thompson-Normal'
+                    idx = obj.thompson_gauss(arms);
+                case 'Thompson-Cautious'
+                    idx = obj.thompson_cautious(arms);
                 otherwise
                     error('Alg not implemented!');
-            end           
+            end
             
         end
         
         % Thompson sampling for Gaussian distributions
-        function idx = thompsonGauss(obj,arms)
+        function idx = thompson_gauss(obj,arms)
             % just sample from the posterior which 
             % has been updated from the prior
             
@@ -70,7 +78,7 @@ classdef Bandit < handle
             b = obj.strategy.prior.var.b;
             vars = zeros(arms,1);
             for i = 1:arms
-                vars(i) = InvGam(a(i),b(i)); % TODO:
+                vars(i) = inv_gamma(a(i),b(i)); % TODO:
             end
             means = obj.mean + sqrt(vars./obj.cnt).*randn(arms,1);
              
@@ -78,6 +86,33 @@ classdef Bandit < handle
             
         end
         
+        % Thompson sampling with resampling
+        function idx_closest = thompson_cautious(obj,arms)
+            % just sample from the posterior which 
+            % has been updated from the prior
+            
+            t = sum(obj.cnt) + 1;
+            % first sample from the variance distributions
+            N = obj.strategy.sample_num(t);
+            last_arm = obj.strategy.last_arm;
+            a = obj.strategy.prior.var.a;
+            b = obj.strategy.prior.var.b;
+            vars = zeros(arms,1);
+            idx = zeros(N,1);            
+            
+            for n = 1:N % repeat sampling from maximum
+                for i = 1:arms
+                    vars(i) = inv_gamma(a(i),b(i)); 
+                end
+                means = obj.mean + sqrt(vars./obj.cnt).*randn(arms,1);
+                [~,idx(n)] = max(means);
+            end
+            % choose closest index to last_arm
+            [~,I] = min(abs(idx - last_arm)); % find closest
+            % last arm
+            obj.strategy.last_arm = idx(I);
+            idx_closest = idx(I);
+        end
         
         % classical ucb strategy
         function idx = ucb1(obj,arms)
@@ -145,7 +180,7 @@ classdef Bandit < handle
         %% Get rewards and update (sufficient) statistics
         function reward(obj,R,I)
             
-            if strcmp(obj.strategy,'ThompsonGauss')
+            if strfind(obj.strategy.name,'Thompson')
                 % get the posteriors
                 obj.strategy.prior.var.a(I) = obj.strategy.prior.var.a(I) + ...
                                            1/2;

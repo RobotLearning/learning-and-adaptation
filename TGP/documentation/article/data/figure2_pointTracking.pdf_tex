@@ -1,4 +1,4 @@
-%% Creator: Inkscape 0.48.3.1, www.inkscape.org
+%% Creator: Inkscape inkscape 0.48.4, www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'figure2_pointTracking.pdf' (pdf, eps, ps)
 %%
@@ -36,7 +36,7 @@
   }%
   \providecommand\rotatebox[2]{#2}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{253.19887695bp}%
+    \setlength{\unitlength}{253.38637695bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -48,15 +48,15 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.7520768)%
+  \begin{picture}(1,0.75152028)%
     \put(0,0){\includegraphics[width=\unitlength]{figure2_pointTracking.pdf}}%
-    \put(0.26076036,0.09258274){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$s_{t}$}}}%
-    \put(0.22580476,0.43232859){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_{t-1}$}}}%
-    \put(0.72157682,0.14477324){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$s_{t+1}$}}}%
-    \put(0.22580659,0.17689147){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$q^{*}_{t}$}}}%
-    \put(0.69129226,0.27886691){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$q^{*}_{t+1}$}}}%
-    \put(0.38730749,0.27244122){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$q_{t}$}}}%
-    \put(0.47962434,0.5011132){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_{t}$}}}%
-    \put(0.85661592,0.32676439){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Sigma$}}}%
+    \put(0.26056741,0.09251423){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$s_{t}$}}}%
+    \put(0.22563767,0.43200867){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_{t-1}$}}}%
+    \put(0.72104287,0.14466611){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$s_{t+1}$}}}%
+    \put(0.2256395,0.17676057){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$q^{*}_{t}$}}}%
+    \put(0.69078072,0.27866056){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$q^{*}_{t+1}$}}}%
+    \put(0.38702089,0.27223962){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$q_{t}$}}}%
+    \put(0.47926943,0.50074239){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$x_{t}$}}}%
+    \put(0.85598205,0.32652259){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Sigma$}}}%
   \end{picture}%
 \endgroup%

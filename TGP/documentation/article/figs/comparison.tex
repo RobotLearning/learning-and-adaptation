@@ -1,0 +1,71 @@
+% This file was created by matlab2tikz v0.4.4 running on MATLAB 8.5.
+% Copyright (c) 2008--2013, Nico Schlömer <nico.schloemer@gmail.com>
+% All rights reserved.
+% 
+% The latest updates can be retrieved from
+%   http://www.mathworks.com/matlabcentral/fileexchange/22022-matlab2tikz
+% where you can also make suggestions and rate matlab2tikz.
+% 
+\begin{tikzpicture}
+
+\begin{axis}[%
+width=5.65104166666667in,
+height=3.70994791666667in,
+scale only axis,
+separate axis lines,
+every outer x axis line/.append style={darkgray!60!black},
+every x tick label/.append style={font=\color{darkgray!60!black}},
+xmin=1,
+xmax=5,
+xtick={1, 2, 3, 4, 5},
+xlabel={Episodes},
+every outer y axis line/.append style={darkgray!60!black},
+every y tick label/.append style={font=\color{darkgray!60!black}},
+ymode=log,
+ymin=0.01,
+ymax=10,
+yminorticks=true,
+ylabel={Sum of Squares Error (SSE)},
+legend style={draw=black,fill=white,legend cell align=left}
+]
+\addplot [
+color=black,
+dashed,
+line width=1.0pt,
+forget plot
+]
+table[row sep=crcr]{
+1 0.550705874707667\\
+2 0.152998198590581\\
+3 0.0758718186428609\\
+4 0.0488997673400057\\
+5 0.036794112098251\\
+};
+\addplot [
+color=black,
+dotted,
+line width=1.0pt,
+forget plot
+]
+table[row sep=crcr]{
+1 0.0721076828940491\\
+2 0.0721029920253314\\
+3 0.0721240571623911\\
+4 0.0721240685520741\\
+5 0.0721240669971075\\
+};
+\addplot [
+color=black,
+solid,
+line width=1.0pt,
+forget plot
+]
+table[row sep=crcr]{
+1 2.06972347152254\\
+2 0.0360202528499323\\
+3 0.0146321250277303\\
+4 0.0178084331707058\\
+5 0.0233960146241748\\
+};
+\end{axis}
+\end{tikzpicture}%
