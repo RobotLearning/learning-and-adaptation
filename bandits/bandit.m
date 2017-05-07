@@ -1,6 +1,6 @@
 %% Bandit class for implementing different strategies
 
-classdef Bandit < handle
+classdef bandit < handle
     
     properties
        

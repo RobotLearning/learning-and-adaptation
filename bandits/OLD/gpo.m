@@ -6,7 +6,7 @@ function [idx,u,Kinv,s2max] = gpo(rewards,xs,Kinv,kern,mesh,acq)
 
 t = size(rewards,2);
 % if at start point return one of the endpoints
- if t == 0, 
+ if t == 0
      u = 0;
      idx = 1;
      s2max = 1;

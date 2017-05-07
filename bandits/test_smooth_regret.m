@@ -6,23 +6,23 @@
 clc; clear; close all;
 
 % average over M experiments
-M = 100;
+M = 50;
 % number of arms
 K = 10;
 % horizon, i.e. total num of time stages
-N = 1000;
+N = 500;
 
 % scale for the switching cost
 switch_alpha = 1/K;
 
-num_algs = 2;
+num_algs = 3;
 strategy{1}.name = 'Thompson-Cautious';
 strategy{1}.a = 10;
-strategy{1}.b = 1.0;
-strategy{1}.sample_num = @(t) floor(t ^ (log(3*K/10)/log(N))); %floor(0.3*K);
-strategy{2}.name = 'Thompson-Normal';
-strategy{2}.a = 10;
-strategy{2}.b = 1.0;
+strategy{1}.b = 2.0;
+strategy{1}.sample_num = @(t) floor(0.3*K); 
+strategy{3}.name = 'Thompson-Normal';
+strategy{3}.a = 10;
+strategy{3}.b = 2.0;
 
 regret = zeros(num_algs,N);
 cum_regret = zeros(num_algs,N);
@@ -39,7 +39,7 @@ for j = 1:M % for each experiment
     
     % initialize different bandit strategies
     for k = 1:num_algs
-        bandit{k} = Bandit(K,strategy{k});
+        band{k} = bandit(K,strategy{k});
     end
     
     for i = 1:N
@@ -50,8 +50,8 @@ for j = 1:M % for each experiment
         
         % play bandit strategy
         for k = 1:num_algs
-            arms(k) = bandit{k}.play();
-            bandit{k}.reward(rewards(arms(k)),arms(k));
+            arms(k) = band{k}.play();
+            band{k}.reward(rewards(arms(k)),arms(k));
             % calculate regret
             regret(k,i) = max(mu) - rewards(arms(k));
             switch_cost(k,i) = switch_alpha * abs(arms(k) - last_arms(k));
@@ -67,10 +67,12 @@ end
 figure
 subplot(2,1,1);
 plot(cum_regret'/M);
-legend('Cautious Thompson','Thompson','Location','northwest');
+legend('Cautious Thompson',...
+       'Thompson','Location','northwest');
 title('Growth of cumulative regret');
 subplot(2,1,2);
 plot((cum_regret + cum_switch_cost)'/M);
-legend('Cautious Thompson','Thompson','Location','northwest');
+legend('Cautious Thompson',...
+       'Thompson','Location','northwest');
 title('Growth of cum switching cost + cum regret');
 % plot switching costs

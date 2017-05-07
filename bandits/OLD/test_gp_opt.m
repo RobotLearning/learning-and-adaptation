@@ -5,13 +5,13 @@
 %% Simulation parameters
 clear; clc; close all; 
 % number of time steps per run
-horizon = 50;
+horizon = 100;
 % dimension of the functions to be optimized
 dim = 1;
 % variance of the noisy function evaluations
 var_noise = 0.000001;
 % generate a fnc over a mesh of pts from that kernel
-meshsize = 100;
+meshsize = 10;
 mesh = linspace(0,1,meshsize);
 % number of trials to consider
 trials = 5;

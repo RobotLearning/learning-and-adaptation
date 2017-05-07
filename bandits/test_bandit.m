@@ -8,7 +8,7 @@ M = 100;
 % number of arms
 K = 10;
 % horizon, i.e. total num of time stages
-N = 1000;
+N = 500;
 
 numAlgs = 4;
 strategy{1}.name = 'EPS-GREEDY';
@@ -18,7 +18,7 @@ strategy{2}.rho = 1;
 strategy{3}.name = 'UCB1-V';
 strategy{4}.name = 'Thompson-Normal';
 strategy{4}.a = 10;
-strategy{4}.b = 1.0;
+strategy{4}.b = 2.0;
 
 regret = zeros(numAlgs,N);
 cum_regret = zeros(numAlgs,N);
@@ -32,7 +32,7 @@ for j = 1:M % for each experiment
     
     % initialize different bandit strategies
     for k = 1:numAlgs
-        bandit{k} = Bandit(K,strategy{k});
+        band{k} = bandit(K,strategy{k});
     end
     
     for i = 1:N
@@ -43,8 +43,8 @@ for j = 1:M % for each experiment
         
         % play bandit strategy
         for k = 1:numAlgs
-            idx(k) = bandit{k}.play();
-            bandit{k}.reward(rewards(idx(k)),idx(k));
+            idx(k) = band{k}.play();
+            band{k}.reward(rewards(idx(k)),idx(k));
             % calculate regret
             regret(k,i) = max(mu) - rewards(idx(k));
             cum_regret(k,i:end) = cum_regret(k,i:end) + regret(k,i);
