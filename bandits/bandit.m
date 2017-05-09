@@ -16,7 +16,7 @@ classdef bandit < handle
     methods
         
         %% Initialize Bandit with a strategy
-        function obj = Bandit(arms,str)
+        function obj = bandit(arms,str)
            
             obj.mean = zeros(arms,1);
             obj.strategy = str;

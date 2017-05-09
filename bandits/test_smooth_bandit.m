@@ -15,14 +15,19 @@ N = 500;
 % scale for the switching cost
 switch_alpha = 1/K;
 
-num_algs = 3;
+num_algs = 5;
 strategy{1}.name = 'Thompson-Cautious';
 strategy{1}.a = 10;
 strategy{1}.b = 2.0;
 strategy{1}.sample_num = @(t) floor(0.3*K); 
-strategy{3}.name = 'Thompson-Normal';
-strategy{3}.a = 10;
-strategy{3}.b = 2.0;
+strategy{2}.name = 'Thompson-Normal';
+strategy{2}.a = 10;
+strategy{2}.b = 2.0;
+strategy{3}.name = 'EPS-GREEDY';
+strategy{3}.eps = @(t) 10/t;
+strategy{4}.name = 'UCB1';
+strategy{4}.rho = 1;
+strategy{5}.name = 'UCB1-V';
 
 regret = zeros(num_algs,N);
 cum_regret = zeros(num_algs,N);
@@ -44,9 +49,9 @@ for j = 1:M % for each experiment
     
     for i = 1:N
         % generate rewards
-        %rewards = mu + sqrt(var).*randn(K,1);
+        rewards = mu + sqrt(var).*randn(K,1);
         % generate from uniform distribution
-        rewards = (mu - sqrt(12*var)/2) + sqrt(12*var).*rand(K,1);
+        %rewards = (mu - sqrt(12*var)/2) + sqrt(12*var).*rand(K,1);
         
         % play bandit strategy
         for k = 1:num_algs
@@ -67,12 +72,20 @@ end
 figure
 subplot(2,1,1);
 plot(cum_regret'/M);
-legend('Cautious Thompson',...
-       'Thompson','Location','northwest');
+legend(strategy{1}.name,...
+    strategy{2}.name,...
+    strategy{3}.name,...
+    strategy{4}.name,...
+    strategy{5}.name,...
+       'Location','northwest');
 title('Growth of cumulative regret');
 subplot(2,1,2);
 plot((cum_regret + cum_switch_cost)'/M);
-legend('Cautious Thompson',...
-       'Thompson','Location','northwest');
+legend(strategy{1}.name,...
+    strategy{2}.name,...
+    strategy{3}.name,...
+    strategy{4}.name,...
+    strategy{5}.name,...
+       'Location','northwest');
 title('Growth of cum switching cost + cum regret');
 % plot switching costs
