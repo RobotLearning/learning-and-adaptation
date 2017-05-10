@@ -8,14 +8,14 @@ clc; clear; close all;
 % average over M experiments
 M = 50;
 % number of arms
-K = 10;
+K = 20;
 % horizon, i.e. total num of time stages
 N = 500;
 
 % scale for the switching cost
 switch_alpha = 1/K;
 
-num_algs = 5;
+num_algs = 7;
 strategy{1}.name = 'Thompson-Cautious';
 strategy{1}.a = 10;
 strategy{1}.b = 2.0;
@@ -25,9 +25,15 @@ strategy{2}.a = 10;
 strategy{2}.b = 2.0;
 strategy{3}.name = 'EPS-GREEDY';
 strategy{3}.eps = @(t) 10/t;
-strategy{4}.name = 'UCB1';
+strategy{4}.name = 'UCB';
 strategy{4}.rho = 1;
-strategy{5}.name = 'UCB1-V';
+strategy{5}.name = 'UCB-V';
+strategy{6}.name = 'UCB-VR'; % regularized UCBV
+strategy{6}.lambda = switch_alpha/20;
+strategy{7}.name = 'Thompson-Regularized';
+strategy{7}.a = 10;
+strategy{7}.b = 2.0;
+strategy{7}.lambda = switch_alpha/20;
 
 regret = zeros(num_algs,N);
 cum_regret = zeros(num_algs,N);
@@ -77,6 +83,8 @@ legend(strategy{1}.name,...
     strategy{3}.name,...
     strategy{4}.name,...
     strategy{5}.name,...
+    strategy{6}.name,...
+    strategy{7}.name,...
        'Location','northwest');
 title('Growth of cumulative regret');
 subplot(2,1,2);
@@ -86,6 +94,8 @@ legend(strategy{1}.name,...
     strategy{3}.name,...
     strategy{4}.name,...
     strategy{5}.name,...
+    strategy{6}.name,...
+    strategy{7}.name,...
        'Location','northwest');
 title('Growth of cum switching cost + cum regret');
 % plot switching costs

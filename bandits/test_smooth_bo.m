@@ -6,19 +6,20 @@
 clc; clear; close all;
 
 % average over M experiments
-M = 1;
+M = 50;
 % horizon, i.e. total num of time stages
 N = 50;
 % GP hyperparameters
 hp.type = 'squared exponential ard';
-hp.l = 0.10;
+hp.l = 0.1;
 hp.scale = 1;
 hp.noise.var = 0.01;
 % buffer for cautious thompson
-buffer = 5;
+meshsize = 20;
+buffer = floor(0.5*meshsize);
 delta_gpmi = 10^(-5);
 
-num_algs = 5;
+num_algs = 6;
 strategy{1}.name = 'GP-UCB';
 strategy{1}.delta = 0.1;
 strategy{2}.name = 'GP-MI';
@@ -27,8 +28,9 @@ strategy{3}.name = 'EI';
 strategy{4}.name = 'Thompson-Normal';
 strategy{5}.name = 'Thompson-Cautious';
 strategy{5}.buffer = buffer;
-meshsize = 100;
-mesh = linspace(0,1,meshsize);
+strategy{6}.name = 'Thompson-Regular';
+strategy{6}.lambda = 1/meshsize;
+mesh = linspace(0,0.2,meshsize);
 regret = zeros(num_algs,N);
 cum_regret = zeros(num_algs,N);
 idx = zeros(num_algs,1);
@@ -82,6 +84,7 @@ legend(strategy{1}.name,...
     strategy{3}.name,...
     strategy{4}.name,...
     strategy{5}.name,...
+    strategy{6}.name,...
        'Location','northwest');
 title('Growth of cumulative regret');
 subplot(2,1,2);
@@ -91,6 +94,7 @@ legend(strategy{1}.name,...
     strategy{3}.name,...
     strategy{4}.name,...
     strategy{5}.name,...
+    strategy{6}.name,...
        'Location','northwest');
 title('Growth of cum switching cost + cum regret');
 % plot switching costs

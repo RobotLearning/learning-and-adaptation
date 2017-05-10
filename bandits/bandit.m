@@ -22,13 +22,19 @@ classdef bandit < handle
             obj.strategy = str;
             obj.cnt = zeros(arms,1);
             
-            if strcmp(obj.strategy.name,'UCB1-V')
+            if strcmp(obj.strategy.name,'UCB-V')
                 obj.strategy.q = zeros(arms,1); % sum of sqr rewards
             end
             
-            if strcmp(obj.strategy.name,'UCB1')
+            if strcmp(obj.strategy.name,'UCB')
                 % fix the range of rewards
                 obj.strategy.b = 1;
+            end
+            
+            if strcmp(obj.strategy.name,'UCB-VR')
+               obj.strategy.q = zeros(arms,1); % sum of sqr rewards
+               obj.strategy.lambda = str.lambda;
+               obj.strategy.last_arm = 1;
             end
             
             % prepare the priors
@@ -43,25 +49,34 @@ classdef bandit < handle
                 obj.strategy.sample_num = obj.strategy.sample_num;
                 obj.strategy.last_arm = 1;
             end
+            
+            if strcmp(obj.strategy.name,'Thompson-Regularized')
+                obj.strategy.lambda = str.lambda;
+                obj.strategy.last_arm = 1;
+            end
         end
         
         %% Strategies for playing
         function idx = play(obj)
             
-            arms = length(obj.mean);
+            n_arms = length(obj.mean);
             switch obj.strategy.name
                 case 'EPS-GREEDY'
-                    idx = obj.epsGreedy(arms);
+                    idx = obj.epsGreedy(n_arms);
                 case 'EPS-FIRST'
-                    idx = obj.epsFirst(arms);
-                case 'UCB1'
-                    idx = obj.ucb1(arms);
-                case 'UCB1-V'
-                    idx = obj.ucb1Variance(arms);
+                    idx = obj.epsFirst(n_arms);
+                case 'UCB'
+                    idx = obj.ucb1(n_arms);
+                case 'UCB-V'
+                    idx = obj.ucb1Variance(n_arms);
                 case 'Thompson-Normal'
-                    idx = obj.thompson_gauss(arms);
+                    idx = obj.thompson_gauss(n_arms);
                 case 'Thompson-Cautious'
-                    idx = obj.thompson_cautious(arms);
+                    idx = obj.thompson_cautious(n_arms);
+                case 'Thompson-Regularized'
+                    idx = obj.thompson_regular(n_arms);
+                case 'UCB-VR'
+                    idx = obj.ucb_vregular(n_arms);
                 otherwise
                     error('Alg not implemented!');
             end
@@ -83,6 +98,26 @@ classdef bandit < handle
             means = obj.mean + sqrt(vars./obj.cnt).*randn(arms,1);
              
              [~,idx] = max(means);
+            
+        end
+        
+        % Thompson sampling regularized w.r.t. last-arm
+        function idx = thompson_regular(obj,n_arms)
+
+            lambda = obj.strategy.lambda;
+            last_arm = obj.strategy.last_arm;
+            % first sample from the variance distributions
+            a = obj.strategy.prior.var.a;
+            b = obj.strategy.prior.var.b;
+            vars = zeros(n_arms,1);
+            for i = 1:n_arms
+                vars(i) = inv_gamma(a(i),b(i)); % TODO:
+            end
+            arms = 1:n_arms;
+            cost = lambda * abs(arms - last_arm);
+            means = obj.mean - cost(:) + sqrt(vars./obj.cnt).*randn(n_arms,1);
+            [~,idx] = max(means);
+            obj.strategy.last_arm = idx;
             
         end
         
@@ -112,6 +147,30 @@ classdef bandit < handle
             % last arm
             obj.strategy.last_arm = idx(I);
             idx_closest = idx(I);
+        end        
+        
+        % regularized ucb strategy
+        function idx = ucb_vregular(obj,n_arms)
+            
+            arms = 1:n_arms;
+            lambda = obj.strategy.lambda;
+            last_arm = obj.strategy.last_arm;
+            t = sum(obj.cnt) + 1;
+            % for variance aware ucb
+            qs = obj.strategy.q ./ obj.cnt;
+            n = obj.cnt - 1;
+            n(n == 0) = 1;
+            V = (qs - obj.mean.^2)./n;
+            rho = 1;
+            if t <= n_arms
+                idx = t;
+            else
+                cost = lambda * abs(arms - last_arm);
+                biasEst = sqrt(rho*log(t).*V)./sqrt(obj.cnt);
+                [~,idx] = max(obj.mean - cost(:) + biasEst);
+            end
+            obj.strategy.last_arm = idx;
+                
         end
         
         % classical ucb strategy
