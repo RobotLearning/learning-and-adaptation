@@ -1,6 +1,6 @@
 % Class implementing a Gaussian Process regression model
 
-classdef gp < handle
+classdef GP < handle
     
     properties          
 
@@ -12,14 +12,23 @@ classdef gp < handle
         cov
         % Kernel function (handle)
         kernel
+        % Derivative of kernel 
+        der_kern
+        % Calculate derivatives
+        flag_der
         
     end
     
     methods (Access = public)
         
         %% Initialize data points, kernel structure and covariance matrix
-        function obj = gp(hp,xs,ys)
+        function obj = GP(hp,xs,ys,der)
             
+            if exist('der')
+                obj.flag_der = der;
+            else
+                obj.flag_der = false;
+            end
             obj.x = xs;
             obj.y = ys;
             obj.hp = hp;
@@ -29,6 +38,7 @@ classdef gp < handle
         end
         
         % Estimate hyperparameters using maximum likelihood
+        % TODO: is this working?
         function fit_hp(obj,hp0)
              
             try
@@ -58,16 +68,25 @@ classdef gp < handle
         
         
         %% predict/update mean and variance at test point(s)
-        function [mu,s2] = predict(obj,xstar)
+        function [mu,s2,mu_der,s2_der] = predict(obj,xstar)
             
             % calculate kernel vector k and store
-            vec = obj.cov_test_and_data(xstar);
+            [vec,vec_der] = obj.cov_test_and_data(xstar);
             % create mu function 
             mu = vec' * (obj.cov \ obj.y);
             % initial covar is 1
             kxx = obj.kernel(xstar,xstar);
             % subtract information gain
             s2 = kxx - vec' * (obj.cov \ vec);
+            
+            if obj.flag_der
+                mu_der = vec_der' * (obj.cov \ obj.y);
+                kxx_der = obj.der_kern(xstar,xstar);
+                s2_der = kxx_der - 2*vec_der' * (obj.cov \ vec);
+            else
+                mu_der = [];
+                s2_der = [];
+            end
         end
         
         function [mu,s2] = predict_mesh(obj,mesh)
@@ -89,6 +108,40 @@ classdef gp < handle
                 s2 = cov_mesh - mat' * (obj.cov \ mat);
             end
             s2 = (s2 + s2')/2; % to enforce symmetric matrix
+        end
+        
+        % Mean function as a handle
+        function mu = mean(obj,x)
+            % calculate kernel vector k and store
+            vec = obj.cov_test_and_data(x);
+            % create mu function 
+            mu = vec' * (obj.cov \ obj.y);
+        end
+        
+        % Variance as a handle
+        function s2 = var(obj,x)
+            % calculate kernel vector k and store
+            vec = obj.cov_test_and_data(x);
+            % initial covar is 1
+            kxx = obj.kernel(x,x);
+            % subtract information gain
+            s2 = kxx - vec' * (obj.cov \ vec);
+        end
+        
+        % Mean derivate as a handle
+        function mu_der = mean_der(obj,x)
+            % calculate kernel vector k and store
+            [~,vec_der] = obj.cov_test_and_data(x);
+            % create mu function 
+            mu_der = vec_der' * (obj.cov \ obj.y);
+        end
+        
+        % Variance derivative as a handle
+        function s2_der = var_der(obj,x)
+            % calculate kernel vector k and store
+            [vec,vec_der] = obj.cov_test_and_data(x);
+            kxx_der = obj.der_kern(x,x);
+            s2_der = kxx_der - 2*vec_der' * (obj.cov \ vec);
         end
         
         % update mean and variance
@@ -123,21 +176,33 @@ classdef gp < handle
                 case 'squared exponential iso'
                     if length(L) == 1
                         obj.kernel = @(x1,x2) s * exp(-(norm(x1(:)-x2(:),2)^2)/(2*(L^2)));
+                        if obj.flag_der
+                            obj.der_kern = @(x1,x2) (1/L^2)*(x1(:)-x2(:))*obj.kernel(x1,x2);
+                        end
                     else
                         error('Lengthscale parameter should be scalar!');
                     end
                 case 'linear iso'
                     if isempty(L)
                         obj.kernel = @(x1,x2) s * x1(:)'*x2(:);
+                        if obj.flag_der
+                            obj.der_kern = @(x1,x2) s * x2(:);
+                        end
                     else
                         error('Lengthscale parameter should be empty!');
                     end
                 case 'squared exponential ard'
                     InvGamma = diag(1./(L.^2));
                     obj.kernel = @(x1,x2) s * exp(-0.5*((x1(:)-x2(:))')*InvGamma*(x1(:)-x2(:)));
+                    if obj.flag_der
+                        obj.der_kern = @(x1,x2) InvGamma*(x1(:)-x2(:))*obj.kernel(x1,x2);
+                    end
                 case 'linear ard'
                     InvGamma = diag(1./(L.^2));
                     obj.kernel = @(x1,x2) s*x1(:)'*InvGamma*x2(:);
+                    if obj.flag_der
+                        obj.der_kern = @(x1,x2) s*InvGamma*x2(:);
+                    end
                 otherwise
                     error('Unrecognized kernel type');
             end
@@ -194,13 +259,23 @@ classdef gp < handle
         % cov - kernel column vector describing the covariances between
         %       the previous points and current test pt.
         %
-        function cov = cov_test_and_data(obj,xstar)
+        function [cov,cov_der] = cov_test_and_data(obj,xstar)
 
             n = size(obj.x,2);
             cov = zeros(n,1);
             for i = 1:n
                 cov(i) = obj.kernel(obj.x(:,i),xstar);
             end
+            if obj.flag_der
+                dim = length(xstar);
+                cov_der = zeros(n,dim);
+                for i = 1:n
+                    cov_der(i,:) = obj.der_kern(obj.x(:,i),xstar);
+                end
+            else
+                cov_der = [];
+            end
+                
         
         end
         
