@@ -63,26 +63,29 @@ for i = 1:n
     s2_der(i) = var_der;
 end
 plot(x,m,'r');
-f = [m+2*sqrt(s2); flip(m-2*sqrt(s2))];
-fill([x;flip(x)],f,'b','FaceAlpha',0.3);
+f_ucb = [m+2*sqrt(s2); flip(m-2*sqrt(s2))];
+fill([x;flip(x)],f_ucb,'b','FaceAlpha',0.3);
 plot(x_sample, y_sample, '*', 'Color', 'k', 'MarkerSize', 8);
 
 %% Climb up to local max of function with a particle
 
 % solve bvp starting from x0 = 0 and ends up at time T to f_max
 %[f_max,idx] = max(f_poly);
-[x_ext_cand,~] = fsolve(@(x)gp.mean_der(x),0);
+acq_func = @(x) gp.mean(x) + 0.5 * gp.var(x);
+acq_der = @(x) gp.mean_der(x) + 0.5 * gp.var_der(x);
+%[x_ext_cand,~] = fsolve(acq_der,0.5);
+[~,idx_cand] = max(acq_func(x));
 xf = x_ext_cand;
 x0 = 0.0;
 T = 5.0;
-fnc_particle = @(t,x) [x(2); -gp.mean_der(x(1))];
+fnc_particle = @(t,x) [x(2); -acq_der(x(1))];
 f_bc = @(x1,x2) [x1(1); x2(1) - xf];
 n_init = 10;
 x_init = @(t) [x0 + (t/T) * (xf-x0); 0.1];
 solinit = bvpinit(linspace(0,T,n_init),x_init);
 sol = bvp4c(fnc_particle,f_bc,solinit);
 x_particle = sol.y(1,:);
-f_particle = gp.predict_mesh(x_particle);
+f_particle = interp1(x,f,x_particle);
 scatter(x_particle,f_particle);
 % 
 % %% Climb down to go to another max
