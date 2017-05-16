@@ -15,13 +15,8 @@ x = randn(n,1);
 l = hp.l;
 s = hp.scale;
 kern = @(x1,x2) s * exp(-(norm(x1(:)-x2(:),2)^2)/(2*(l^2)));
-Sigma = zeros(n,n);
-for i = 1:n
-    for j = 1:n
-        Sigma(i,j) = kern(x(i),x(j));
-    end
-end
-y = mu + chol(Sigma + hp.noise.var*eye(n)) * x;
+Sigma = ker_matrix(x,kern);
+y = mu + chol(Sigma + hp.noise.var*eye(n)) * randn(n,1);
 gp = GP(hp,x',y);
 
 meshsize = 100;
@@ -72,6 +67,28 @@ plot(z,m_diff,z,s2_diff, 'LineWidth', 2);
 legend('mean der','var der','mean diff', 'var diff');
 axis tight;
 hold off;
+
+%% Test in 2D
+n = 20;
+mu = 0;
+x = randn(2,n);
+l = hp.l;
+s = hp.scale;
+kern = @(x1,x2) s * exp(-(norm(x1(:)-x2(:),2)^2)/(2*(l^2)));
+Sigma = ker_matrix(x,kern);
+y = mu + chol(Sigma + hp.noise.var*eye(n)) * randn(n,1);
+gp = GP(hp,x,y);
+
+meshsize = 50;
+z1 = linspace(min(x(:,1)) - 0.2, max(x(:,1)) + 0.2, meshsize);
+z2 = linspace(min(x(:,2)) - 0.2, max(x(:,2)) + 0.2, meshsize);
+[X1,X2] = meshgrid(z1,z2);
+X = [X1(:),X2(:)]';
+[m,s2] = gp.predict_mesh(X);
+s2 = diag(s2);
+M = reshape(m,meshsize,meshsize);
+figure;
+mesh(X1,X2,M);
 
 %% Hyperparameter estimation
 

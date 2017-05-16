@@ -55,12 +55,6 @@ classdef Bandit < handle
                 obj.strategy.last_arm = 1;
             end
             
-            if strcmp(obj.strategy.name,'Thompson-Plan')
-                obj.strategy.horizon = str.horizon;
-                obj.strategy.counter = 0;
-                obj.strategy.last_arm_seq = sort(randi(arms,str.horizon,1));
-            end
-            
         end
         
         %% Strategies for playing
@@ -82,8 +76,6 @@ classdef Bandit < handle
                     idx = obj.thompson_cautious(n_arms);
                 case 'Thompson-Regularized'
                     idx = obj.thompson_regular(n_arms);
-                case 'Thompson-Plan'
-                    idx = obj.thompson_plan(n_arms);
                 case 'UCB-VR'
                     idx = obj.ucb_vregular(n_arms);
                 otherwise
@@ -156,48 +148,7 @@ classdef Bandit < handle
             % last arm
             obj.strategy.last_arm = idx(I);
             idx_closest = idx(I);
-        end    
-        
-        % Thompson sampling with planning till horizon
-        function idx_next = thompson_plan(obj,n_arms)
-            % just sample from the posterior which 
-            % has been updated from the prior
-            
-            last_idx = obj.strategy.counter;
-            T = obj.strategy.horizon;
-            last_arm_seq = obj.strategy.last_arm_seq;
-            a = obj.strategy.prior.var.a;
-            b = obj.strategy.prior.var.b;
-            vars = zeros(n_arms,1);
-            idxs = zeros(T,1);
-            
-            % SAMPLING SECTION
-            for n = 1:T % repeat sampling from maximum
-                for i = 1:n_arms
-                    vars(i) = inv_gamma(a(i),b(i));
-                end
-                means = obj.mean + sqrt(vars./obj.cnt).*randn(n_arms,1);
-                [~,idxs(n)] = max(means);
-            end
-            % PLANNING SECTION
-            if any(idxs == last_arm_seq(last_idx+1))
-                idx_next = last_arm_seq(last_idx+1);
-                obj.strategy.counter = obj.strategy.counter + 1;
-            else
-                % select nearest neighbors to last_arm sequentially
-                [idxs,~] = sort(idxs);
-                [closest,C] = min(abs(idxs - last_arm_seq(last_idx)));
-                obj.strategy.counter = 0;
-                if closest < last_arm_seq(last_idx)
-                    arms = [idxs(C:-1:1); idxs(C+1:1:end)];
-                else
-                    arms = [idxs(C:1:end); idxs(C-1:-1:1)];
-                end
-                last_arm_seq = arms;
-                idx_next = last_arm_seq(1);
-            end
-            obj.strategy.horizon = obj.strategy.horizon - 1;
-        end                
+        end
         
         % regularized ucb strategy
         function idx = ucb_vregular(obj,n_arms)

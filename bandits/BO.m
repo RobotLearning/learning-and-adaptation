@@ -1,6 +1,6 @@
 %% Bandit class for implementing different strategies
 
-classdef bayes_opt < handle
+classdef BO < handle
     
     properties
        
@@ -18,10 +18,10 @@ classdef bayes_opt < handle
     methods
         
         %% Initialize Bayesian Optimization with a strategy
-        function obj = bayes_opt(mesh,hp,str)
+        function obj = BO(mesh,hp,str)
            
             obj.mesh = mesh;
-            obj.gp = gp(hp,[],[]);
+            obj.gp = GP(hp,[],[]);
             obj.strategy = str;
             obj.t = 1;
             
@@ -74,7 +74,7 @@ classdef bayes_opt < handle
            acq = @(m,s2) m + sqrt(beta * s2);
            [~,idx] = max(acq(mu(:),s2(:)));
            idx = idx(1);
-           x = obj.mesh(idx);
+           x = obj.mesh(:,idx);
         end
         
         function [x,idx] = gp_mi(obj)
@@ -86,7 +86,7 @@ classdef bayes_opt < handle
             s2 = diag(Sigma);
             [~,idx] = max(acq(mu(:),s2(:)));
             idx = idx(1);
-            x = obj.mesh(idx);
+            x = obj.mesh(:,idx);
             obj.strategy.gamma = gamma + s2(idx);
         end
         
@@ -100,7 +100,7 @@ classdef bayes_opt < handle
             s2 = diag(Sigma);
             [~,idx] = max(acq(mu(:),s2(:)));
             idx = idx(1);
-            x = obj.mesh(idx);            
+            x = obj.mesh(:,idx);            
         end
         
         %% THOMPSON SAMPLING METHODS
@@ -109,10 +109,10 @@ classdef bayes_opt < handle
             [mu,Sigma] = obj.gp.predict_mesh(obj.mesh);
             % better for too smooth kernels
             [U,S] = eig(Sigma);
-            f = mu(:) + 0.2 * U * sqrt(max(0,real(S))) * randn(meshsize,1);
+            f = mu(:) + 0.5 * U * sqrt(max(0,real(S))) * randn(meshsize,1);
             [~,idx] = max(f);
             idx = idx(1);
-            x = obj.mesh(idx);
+            x = obj.mesh(:,idx);
         end
         
         % regularized thompson
@@ -124,10 +124,10 @@ classdef bayes_opt < handle
             % better for too smooth kernels
             [U,S] = eig(Sigma);
             cost = obj.strategy.lambda * abs(idxs - last_idx);
-            f = mu(:) - cost(:) + 0.2 * U * sqrt(max(0,real(S))) * randn(meshsize,1);
+            f = mu(:) - cost(:) + 0.5 * U * sqrt(max(0,real(S))) * randn(meshsize,1);
             [~,idx] = max(f);
             idx = idx(1);
-            x = obj.mesh(idx);
+            x = obj.mesh(:,idx);
         end        
         
         % cautious thompson
@@ -138,7 +138,7 @@ classdef bayes_opt < handle
             [mu,Sigma] = obj.gp.predict_mesh(obj.mesh);
             % better for too smooth kernels
             [U,S] = eig(Sigma);
-            M = 0.2 * U * sqrt(max(0,real(S)));
+            M = 0.5 * U * sqrt(max(0,real(S)));
             f = zeros(meshsize,buffer);
             for i = 1:buffer
                 f(:,i) = mu(:) + M * randn(meshsize,1);
@@ -147,7 +147,7 @@ classdef bayes_opt < handle
             % choose closest index to last index taken
             [~,I] = min(abs(idx - last_idx)); % find closest
             idx = idx(I);
-            x = obj.mesh(idx);
+            x = obj.mesh(:,idx);
         end        
         
         

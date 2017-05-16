@@ -10,12 +10,12 @@ M = 50;
 % number of arms
 K = 10;
 % horizon, i.e. total num of time stages
-N = 500;
+N = 300;
 
 % scale for the switching cost
 switch_alpha = 1/K;
 
-num_algs = 8;
+num_algs = 7;
 strategy{1}.name = 'Thompson-Cautious';
 strategy{1}.a = 10;
 strategy{1}.b = 2.0;
@@ -34,10 +34,6 @@ strategy{7}.name = 'Thompson-Regularized';
 strategy{7}.a = 10;
 strategy{7}.b = 2.0;
 strategy{7}.lambda = switch_alpha/20;
-strategy{8}.name = 'Thompson-Plan';
-strategy{8}.a = 10;
-strategy{8}.b = 2.0;
-strategy{8}.horizon = N; % not anytime
 
 regret = zeros(num_algs,N);
 cum_regret = zeros(num_algs,N);
@@ -59,9 +55,9 @@ for j = 1:M % for each experiment
     
     for i = 1:N
         % generate rewards
-        rewards = mu + sqrt(var).*randn(K,1);
+        %rewards = mu + sqrt(var).*randn(K,1);
         % generate from uniform distribution
-        %rewards = (mu - sqrt(12*var)/2) + sqrt(12*var).*rand(K,1);
+        rewards = (mu - sqrt(12*var)/2) + sqrt(12*var).*rand(K,1);
         
         % play bandit strategy
         for k = 1:num_algs

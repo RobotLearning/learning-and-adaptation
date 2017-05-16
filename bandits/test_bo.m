@@ -35,7 +35,7 @@ for j = 1:M % for each experiment
     
     % initialize different bandit strategies
     for k = 1:numAlgs
-        bo{k} = bayes_opt(mesh,hp,strategy{k});
+        bo{k} = BO(mesh,hp,strategy{k});
     end
     
     % generate function
