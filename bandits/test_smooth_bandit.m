@@ -8,14 +8,14 @@ clc; clear; close all;
 % average over M experiments
 M = 50;
 % number of arms
-K = 20;
+K = 10;
 % horizon, i.e. total num of time stages
 N = 500;
 
 % scale for the switching cost
 switch_alpha = 1/K;
 
-num_algs = 7;
+num_algs = 8;
 strategy{1}.name = 'Thompson-Cautious';
 strategy{1}.a = 10;
 strategy{1}.b = 2.0;
@@ -34,6 +34,10 @@ strategy{7}.name = 'Thompson-Regularized';
 strategy{7}.a = 10;
 strategy{7}.b = 2.0;
 strategy{7}.lambda = switch_alpha/20;
+strategy{8}.name = 'Thompson-Plan';
+strategy{8}.a = 10;
+strategy{8}.b = 2.0;
+strategy{8}.horizon = N; % not anytime
 
 regret = zeros(num_algs,N);
 cum_regret = zeros(num_algs,N);
@@ -50,7 +54,7 @@ for j = 1:M % for each experiment
     
     % initialize different bandit strategies
     for k = 1:num_algs
-        band{k} = bandit(K,strategy{k});
+        band{k} = Bandit(K,strategy{k});
     end
     
     for i = 1:N
