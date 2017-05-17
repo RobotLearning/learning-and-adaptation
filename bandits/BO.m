@@ -37,6 +37,10 @@ classdef BO < handle
             elseif strcmp(obj.strategy.name,'Thompson-Regular')
                 obj.strategy.lambda = str.lambda;
                 obj.strategy.last_idx = 1;
+            elseif strcmp(obj.strategy.name,'Thompson-Plan')
+                obj.strategy.buffer = str.buffer;
+                obj.strategy.last_arms = ones(1,str.buffer);
+                obj.strategy.current_idx = str.buffer;
                 % number of times to sample
                 %error('Alg not implemented!');
             end
@@ -58,6 +62,8 @@ classdef BO < handle
                     [x,idx] = obj.thompson_cautious();
                 case 'Thompson-Regular'
                     [x,idx] = obj.thompson_regular();
+                case 'Thompson-Plan'
+                    [x,idx] = obj.thompson_plan();
                 otherwise
                     error('Alg not implemented!');
             end            
@@ -109,7 +115,7 @@ classdef BO < handle
             [mu,Sigma] = obj.gp.predict_mesh(obj.mesh);
             % better for too smooth kernels
             [U,S] = eig(Sigma);
-            f = mu(:) + 0.5 * U * sqrt(max(0,real(S))) * randn(meshsize,1);
+            f = mu(:) + U * sqrt(max(0,real(S))) * randn(meshsize,1);
             [~,idx] = max(f);
             idx = idx(1);
             x = obj.mesh(:,idx);
@@ -124,7 +130,7 @@ classdef BO < handle
             % better for too smooth kernels
             [U,S] = eig(Sigma);
             cost = obj.strategy.lambda * abs(idxs - last_idx);
-            f = mu(:) - cost(:) + 0.5 * U * sqrt(max(0,real(S))) * randn(meshsize,1);
+            f = mu(:) - cost(:) + U * sqrt(max(0,real(S))) * randn(meshsize,1);
             [~,idx] = max(f);
             idx = idx(1);
             x = obj.mesh(:,idx);
@@ -138,17 +144,55 @@ classdef BO < handle
             [mu,Sigma] = obj.gp.predict_mesh(obj.mesh);
             % better for too smooth kernels
             [U,S] = eig(Sigma);
-            M = 0.5 * U * sqrt(max(0,real(S)));
+            M = U * sqrt(max(0,real(S)));
             f = zeros(meshsize,buffer);
             for i = 1:buffer
                 f(:,i) = mu(:) + M * randn(meshsize,1);
             end
             [~,idx] = max(f);
             % choose closest index to last index taken
-            [~,I] = min(abs(idx - last_idx)); % find closest
+            dists = obj.mesh(:,idx) - obj.mesh(:,last_idx);
+            [~,I] = min(sum(dists.*dists,1)); 
+            % find closest
             idx = idx(I);
             x = obj.mesh(:,idx);
         end        
+        
+        % planning thompson
+         function [x,idx] = thompson_plan(obj)
+            meshsize = length(obj.mesh);
+            buffer = obj.strategy.buffer;
+            last_arms = obj.strategy.last_arms;
+            current_idx = obj.strategy.current_idx;
+            if current_idx == buffer
+                obj.strategy.current_idx = 1;
+                [mu,Sigma] = obj.gp.predict_mesh(obj.mesh);
+                % better for too smooth kernels
+                [U,S] = eig(Sigma);
+                M = U * sqrt(max(0,real(S)));
+                f = zeros(meshsize,buffer);
+                for i = 1:buffer
+                    f(:,i) = mu(:) + M * randn(meshsize,1);
+                end
+                [~,idx] = max(f);
+                % FIND NEAREST NEIGHBORS
+                % choose closest index to last index taken
+                list = idx;
+                last_idx = current_idx;
+                for i = 1:buffer
+                    dists = obj.mesh(:,list) - obj.mesh(:,last_idx);
+                    % remove an element 
+                    [~,I] = min(sum(dists.*dists,1));
+                    obj.strategy.last_arms(i) = list(I);
+                    last_idx = list(I);
+                    list = setdiff(list,list(I));
+                end
+            else
+                obj.strategy.current_idx = current_idx + 1;
+                x = obj.mesh(:,last_arms(current_idx+1));
+                idx = last_arms(current_idx+1);
+            end
+         end
         
         
         %% Get rewards and update GP
