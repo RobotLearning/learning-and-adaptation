@@ -6,7 +6,7 @@ clc; clear; close all;
 % average over M experiments
 M = 100;
 % number of arms
-K = 10;
+K = 20;
 % horizon, i.e. total num of time stages
 N = 500;
 
@@ -25,6 +25,8 @@ cum_regret = zeros(numAlgs,N);
 idx = zeros(numAlgs,1);
 
 for j = 1:M % for each experiment
+    
+    fprintf('Experiment %d\n', j);
     
     % generating K gaussians
     mu = 1*rand(K,1);

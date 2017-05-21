@@ -22,7 +22,7 @@ classdef Bandit < handle
             obj.strategy = str;
             obj.cnt = zeros(arms,1);
             
-            if strcmp(obj.strategy.name,'UCB-V')
+            if strcmp(obj.strategy.name,'UCBV')
                 obj.strategy.q = zeros(arms,1); % sum of sqr rewards
             end
             
@@ -31,7 +31,7 @@ classdef Bandit < handle
                 obj.strategy.b = 1;
             end
             
-            if strcmp(obj.strategy.name,'UCB-VR')
+            if strcmp(obj.strategy.name,'UCBV-Regularized')
                obj.strategy.q = zeros(arms,1); % sum of sqr rewards
                obj.strategy.lambda = str.lambda;
                obj.strategy.last_arm = 1;
@@ -68,7 +68,7 @@ classdef Bandit < handle
                     idx = obj.epsFirst(n_arms);
                 case 'UCB'
                     idx = obj.ucb1(n_arms);
-                case 'UCB-V'
+                case 'UCBV'
                     idx = obj.ucb1Variance(n_arms);
                 case 'Thompson-Normal'
                     idx = obj.thompson_gauss(n_arms);
@@ -76,7 +76,7 @@ classdef Bandit < handle
                     idx = obj.thompson_cautious(n_arms);
                 case 'Thompson-Regularized'
                     idx = obj.thompson_regular(n_arms);
-                case 'UCB-VR'
+                case 'UCBV-Regularized'
                     idx = obj.ucb_vregular(n_arms);
                 otherwise
                     error('Alg not implemented!');
@@ -252,13 +252,13 @@ classdef Bandit < handle
             obj.mean(I) = (obj.mean(I)*obj.cnt(I) + R)/(obj.cnt(I)+1);
             obj.cnt(I) = obj.cnt(I) + 1;
             
-            if strcmp(obj.strategy.name,'UCB1-V')
+            if strcmp(obj.strategy.name,'UCBV')
                 % update sums of sqr rewards
                 obj.strategy.q(I) = obj.strategy.q(I) + R^2;
             end
             
             % update if range seems to be bigger
-            if strcmp(obj.strategy,'UCB1')
+            if strcmp(obj.strategy,'UCB')
                 rangeEst = R;
                 obj.strategy.b = max(1,rangeEst);
             end

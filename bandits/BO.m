@@ -115,7 +115,7 @@ classdef BO < handle
             [mu,Sigma] = obj.gp.predict_mesh(obj.mesh);
             % better for too smooth kernels
             [U,S] = eig(Sigma);
-            f = mu(:) + U * sqrt(max(0,real(S))) * randn(meshsize,1);
+            f = mu(:) + 0.2 * U * sqrt(max(0,real(S))) * randn(meshsize,1);
             [~,idx] = max(f);
             idx = idx(1);
             x = obj.mesh(:,idx);
@@ -124,27 +124,30 @@ classdef BO < handle
         % regularized thompson
         function [x,idx] = thompson_regular(obj)
             last_idx = obj.strategy.last_idx;
+            lambda = obj.strategy.lambda;
             meshsize = length(obj.mesh);
             idxs = 1:meshsize;
             [mu,Sigma] = obj.gp.predict_mesh(obj.mesh);
             % better for too smooth kernels
             [U,S] = eig(Sigma);
-            cost = obj.strategy.lambda * abs(idxs - last_idx);
-            f = mu(:) - cost(:) + U * sqrt(max(0,real(S))) * randn(meshsize,1);
+            dist = obj.mesh(:,idxs) - obj.mesh(:,last_idx);
+            cost = sqrt(sum(dist.*dist,1));
+            f = mu(:) - lambda * cost(:) + 0.2 * U * sqrt(max(0,real(S))) * randn(meshsize,1);
             [~,idx] = max(f);
             idx = idx(1);
+            obj.strategy.last_idx = idx;
             x = obj.mesh(:,idx);
         end        
         
         % cautious thompson
         function [x,idx] = thompson_cautious(obj)
             meshsize = length(obj.mesh);
-            buffer = obj.strategy.buffer;
+            buffer = obj.strategy.buffer(obj.t);
             last_idx = obj.strategy.last_idx;
             [mu,Sigma] = obj.gp.predict_mesh(obj.mesh);
             % better for too smooth kernels
             [U,S] = eig(Sigma);
-            M = U * sqrt(max(0,real(S)));
+            M = 0.2 * U * sqrt(max(0,real(S)));
             f = zeros(meshsize,buffer);
             for i = 1:buffer
                 f(:,i) = mu(:) + M * randn(meshsize,1);
@@ -155,6 +158,7 @@ classdef BO < handle
             [~,I] = min(sum(dists.*dists,1)); 
             % find closest
             idx = idx(I);
+            obj.strategy.last_idx = idx;
             x = obj.mesh(:,idx);
         end        
         
