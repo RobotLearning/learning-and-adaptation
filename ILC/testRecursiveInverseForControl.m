@@ -3,24 +3,23 @@
 clc; clear; close all; rng(3);
 
 % Testing the idea that minimum principle for trajectory tracking
-% with quadratic tracking error costs and zero control input penalty
-% gives the same results as batch lifted-matrix inversion
+% with quadratic tracking error costs and small control input penalty
+% gives the same results as batch lifted-matrix inversion as R \to 0
 
 n = 2; % dim_x
 m = 2; % dim_u
 T = 1.0; % final time
-N = 2; % num of traj. points
+N = 20; % num of traj. points
 dt = T/N; % discretization
 A = randn(n);
 B = randn(n,m);
-As = repmat(A,1,1,N);
-Bs = repmat(B,1,1,N);
+As = repmat(A,1,1,N+1);
+Bs = repmat(B,1,1,N+1);
 %A = randn(n,n,N);
 %B = randn(n,m,N);
 
-% Discretize and lift nominal  dynamics
+% Discretize and lift nominal dynamics
 [Ad,Bd] = discretizeDyn(As,Bs,dt);
-F = liftDyn(Ad,Bd);
 
 %% sample reference from a Gaussian Process
 
@@ -28,26 +27,43 @@ hp.type = 'squared exponential ard';
 hp.l = 0.1;
 hp.scale = 1;
 hp.noise.var = 0.01;
-t = dt * (1:N);
+t = dt * (1:N+1);
 l = hp.l;
 s = hp.scale;
-mu = zeros(N,n);
+mu = zeros(N+1,n);
 kern = @(x1,x2) s * exp(-(norm(x1(:)-x2(:),2)^2)/(2*(l^2)));
 Sigma = ker_matrix(t,kern);
 [U,S] = eig(Sigma);
-r = mu + U * sqrt(max(0,real(S))) * randn(N,n);
+r = mu + U * sqrt(max(0,real(S))) * randn(N+1,n);
 
 %plot(x,r);
 
-%% Invert the reference to find best controls and evolve system from x0=0
-
+%% Invert the reference to find best controls and evolve system from x0=r0
+% TODO : check where traj starts!
 rr = r';
 r_lift = rr(:);
+F = liftDyn(Ad,Bd);
 u_lift = F \ r_lift;
 x_lift = F * u_lift;
-x = reshape(x_lift,n,N);
+x = reshape(x_lift,n,N+1);
 plot(t,x,t,r);
 disp('Max tracking error:');
 max(max(x - r'))
 disp('Due to inversion error:');
-norm(eye(N*n) - F*pinv(F), 2)
+norm(eye((N+1)*n) - F*pinv(F), 2)
+
+%% Solve u's instead with BVP (minimum principle)
+
+solinit = bvpinit(linspace(0,T,N+1),zeros(1,2*n));
+
+params.As = Ad;
+params.Bs = Bd;
+params.Q = eye(n);
+params.R = 0.001*eye(m);
+params.ref = r;
+params.T = T;
+
+odefun = @(t,x) pmp_ltv_ref(t,x,params);
+bcfun = @(xa,xb) [xa(1:n)-rr(:,1); xb(n+1:end);];
+sol = bvp4c(odefun,bcfun,solinit);
+%u = -params.R \ (params.Bs' * 
