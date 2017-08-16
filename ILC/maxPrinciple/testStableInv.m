@@ -6,7 +6,7 @@ clc; clear; close all; rng(3);
 % with quadratic tracking error costs and small control input penalty
 % gives the same results as batch lifted-matrix inversion as R \to 0
 
-n = 3; % dim_x
+n = 1; % dim_x
 m = 1; % dim_u
 T = 1.0; % final time
 N = 50; % num of traj. points
