@@ -7,27 +7,13 @@ n = length(xbar);
 x = xbar(1:n/2);
 lambda = xbar(n/2+1:end);
 
-As = params.As;
-Bs = params.Bs;
+A = params.A;
+B = params.B;
 Q = params.Q;
 R = params.R;
-ref = params.ref'; % reference trajectory
-T = params.T; % final time tf
-N = size(As,3)-1;
-dt = T/N;
-idx_floor = min(N,floor(t/dt)+1);
-t_rem = t - floor(t/dt)*dt;
-
-
-A = As(:,:,idx_floor);
-B = Bs(:,:,idx_floor);
-r = ref(:,idx_floor);
-if t_rem > 0.0
-    A = A + (t_rem/dt) * As(:,:,idx_floor+1); 
-    B = B + (t_rem/dt) * Bs(:,:,idx_floor+1); 
-    r = r + (t_rem/dt) * ref(:,idx_floor+1);
-end
-
-x_dot = A*x - R \ (B' * lambda);
+ts = params.ts;
+ref = params.ref; % reference trajectory
+r = interp1(ts,ref,t)';
+x_dot = A*x - B*(R \ (B' * lambda));
 lambda_dot = Q*(r-x) - A'*lambda;
 xbar_dot = [x_dot(:); lambda_dot(:)];
