@@ -5,7 +5,7 @@ clc; clear; close all;
 
 %% Plot a function
 
-%rng(2);
+rng(3);
 hp.type = 'squared exponential ard';
 hp.l = 0.2;
 hp.scale = 1;
@@ -25,9 +25,8 @@ plot(mesh,f);
 hold on;
 legend('function');
 
-
 %% Traverse the path with Thompson sampling
-
+%{
 horizon = 20;
 buffer = 20;
 cand_max = zeros(buffer,1);
@@ -58,6 +57,7 @@ for i = 1:horizon
     plot(x, y_sample, '*', 'Color', 'k', 'MarkerSize', 8);
 end
 hold off;
+%}
     
 %% OTHER CODE
 % Fit a fourth order model
